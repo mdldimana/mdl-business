@@ -12,20 +12,22 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DB_HOST
-        value: your-db-host
+        value: localhost
       - key: DB_USER
-        value: your-db-user
+        value: root
       - key: DB_PASS
-        value: your-db-password
+        value: root
       - key: DB_NAME
         value: ecommerce
+      - key: DB_PORT
+        value: 3306
       - key: STRIPE_PUBLIC_KEY
-        value: your-stripe-public-key
+        value: ""
       - key: STRIPE_SECRET_KEY
-        value: your-stripe-secret-key
+        value: ""
       - key: TWILIO_ACCOUNT_SID
-        value: your-twilio-sid
+        value: ""
       - key: TWILIO_AUTH_TOKEN
-        value: your-twilio-token
+        value: ""
       - key: ADMIN_WHATSAPP
-        value: whatsapp:+243XXXXXXXXX
+        value: ""
