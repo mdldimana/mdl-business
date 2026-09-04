@@ -7,7 +7,7 @@ produit_bp = Blueprint('produit', __name__)
 @produit_bp.route('/produits')
 def liste_produits():
     """Affiche la liste de tous les produits"""
-    # Récupérer tous les produits disponibles
+    # Afficher tous les produits disponibles (y compris les services)
     produits = Produit.query.filter_by(est_disponible=True).all()
     categories = Categorie.query.filter_by(est_active=True).all()
 
