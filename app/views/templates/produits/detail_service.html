@@ -23,10 +23,11 @@
             <div class="card shadow-sm border-0 overflow-hidden">
                 <div class="card-img-wrapper" style="height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                     {% if service.image_principale %}
-                        <img src="{{ url_for('static', filename=service.image_principale) }}" 
+                        <img src="{{ service.image_principale }}" 
                              class="w-100 h-100" 
                              alt="{{ service.nom }}"
-                             style="object-fit: cover;">
+                             style="object-fit: cover;"
+                             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'d-flex align-items-center justify-content-center h-100 text-white\'><i class=\'fas fa-concierge-bell fa-8x opacity-25\'></i></div>'">
                     {% else %}
                         <div class="d-flex align-items-center justify-content-center h-100 text-white">
                             <i class="fas fa-concierge-bell fa-8x opacity-25"></i>

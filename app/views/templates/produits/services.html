@@ -50,10 +50,11 @@
                         <!-- Image -->
                         <div class="card-img-wrapper overflow-hidden" style="height: 220px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                             {% if service.image_principale %}
-                                <img src="{{ url_for('static', filename=service.image_principale) }}" 
+                                <img src="{{ service.image_principale }}" 
                                      class="card-img-top" 
                                      alt="{{ service.nom }}"
-                                     style="height: 220px; width: 100%; object-fit: cover; transition: transform 0.5s ease;">
+                                     style="height: 220px; width: 100%; object-fit: cover; transition: transform 0.5s ease;"
+                                     onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'d-flex align-items-center justify-content-center h-100 text-white\'><i class=\'fas fa-concierge-bell fa-5x opacity-25\'></i></div>'">
                             {% else %}
                                 <div class="d-flex align-items-center justify-content-center h-100 text-white">
                                     <i class="fas fa-concierge-bell fa-5x opacity-25"></i>
