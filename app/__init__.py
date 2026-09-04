@@ -7,17 +7,27 @@ from app.models import Utilisateur, Categorie, Produit
 
 load_dotenv()
 
+
 def create_app():
     app = Flask(__name__,
                 template_folder='views/templates',
                 static_folder='views/static')
 
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-secret-key'
-    app.config['SQLALCHEMY_DATABASE_URI'] = (
-        f"mysql+pymysql://{os.environ.get('DB_USER')}:{os.environ.get('DB_PASS')}"
-        f"@{os.environ.get('DB_HOST')}:{os.environ.get('DB_PORT')}"
-        f"/{os.environ.get('DB_NAME')}"
-    )
+
+    # ============================================ -->
+    # UTILISER DATABASE_URL (POSTGRESQL)
+    # ============================================ -->
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+
+    # Fallback pour le développement local
+    if not app.config['SQLALCHEMY_DATABASE_URI']:
+        app.config['SQLALCHEMY_DATABASE_URI'] = (
+            f"mysql+pymysql://{os.environ.get('DB_USER')}:{os.environ.get('DB_PASS')}"
+            f"@{os.environ.get('DB_HOST')}:{os.environ.get('DB_PORT')}"
+            f"/{os.environ.get('DB_NAME')}"
+        )
+
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
@@ -31,7 +41,6 @@ def create_app():
 
     @app.route('/')
     def accueil():
-        # Récupérer quelques produits pour la page d'accueil
         produits_recents = Produit.query.filter_by(est_disponible=True).limit(4).all()
         return render_template('accueil.html', produits=produits_recents)
 
