@@ -19,6 +19,7 @@ def create_app():
     # UTILISER DATABASE_URL (POSTGRESQL)
     # ============================================ -->
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+    # psycopg v3 utilise automatiquement postgresql+psycopg
 
     # Fallback pour le développement local
     if not app.config['SQLALCHEMY_DATABASE_URI']:
