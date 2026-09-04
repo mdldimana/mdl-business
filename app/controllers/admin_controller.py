@@ -77,10 +77,10 @@ def tableau_bord():
 @admin_required
 def gestion_produits():
     """Liste des produits pour l'administration"""
-    # Récupérer uniquement les produits qui ne sont pas des services
-    produits = Produit.query.filter_by(est_service=False).all()
+    produits = Produit.query.all()
     categories = Categorie.query.all()
     return render_template('admin/produits.html', produits=produits, categories=categories)
+
 
 @admin_bp.route('/produit/ajouter', methods=['GET', 'POST'])
 @login_required
@@ -101,15 +101,19 @@ def ajouter_produit():
             flash('Veuillez remplir tous les champs obligatoires.', 'danger')
             return redirect(url_for('admin.ajouter_produit'))
 
-        # Gérer l'upload de l'image
+        # Gérer l'upload de l'image vers Cloudinary
         image_path = None
         if 'image' in request.files:
             file = request.files['image']
-            try:
-                image_path = upload_image(file)
-            except ValueError as e:
-                flash(str(e), 'danger')
-                return redirect(url_for('admin.ajouter_produit'))
+            if file and file.filename != '':
+                try:
+                    image_path = upload_image(file)
+                    if not image_path:
+                        flash('Erreur lors de l\'upload de l\'image.', 'danger')
+                        return redirect(url_for('admin.ajouter_produit'))
+                except ValueError as e:
+                    flash(str(e), 'danger')
+                    return redirect(url_for('admin.ajouter_produit'))
 
         produit = Produit(
             nom=nom,
@@ -150,19 +154,17 @@ def modifier_produit(produit_id):
         produit.categorie_id = int(request.form.get('categorie_id', 0))
         produit.est_disponible = produit.stock > 0
 
-        # Gérer l'upload de l'image
+        # Gérer l'upload de l'image vers Cloudinary
         if 'image' in request.files:
             file = request.files['image']
             if file and file.filename != '':
                 try:
-                    # Supprimer l'ancienne image si elle existe
-                    if produit.image_principale:
-                        old_path = os.path.join('app', 'views', 'static', produit.image_principale)
-                        if os.path.exists(old_path):
-                            os.remove(old_path)
-
-                    # Sauvegarder la nouvelle image
-                    produit.image_principale = upload_image(file)
+                    image_url = upload_image(file)
+                    if image_url:
+                        produit.image_principale = image_url
+                    else:
+                        flash('Erreur lors de l\'upload de l\'image.', 'danger')
+                        return redirect(url_for('admin.modifier_produit', produit_id=produit_id))
                 except ValueError as e:
                     flash(str(e), 'danger')
                     return redirect(url_for('admin.modifier_produit', produit_id=produit_id))
