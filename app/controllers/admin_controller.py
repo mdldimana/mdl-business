@@ -77,10 +77,10 @@ def tableau_bord():
 @admin_required
 def gestion_produits():
     """Liste des produits pour l'administration"""
-    produits = Produit.query.all()
+    # Récupérer uniquement les produits qui ne sont pas des services
+    produits = Produit.query.filter_by(est_service=False).all()
     categories = Categorie.query.all()
     return render_template('admin/produits.html', produits=produits, categories=categories)
-
 
 @admin_bp.route('/produit/ajouter', methods=['GET', 'POST'])
 @login_required
@@ -587,7 +587,6 @@ def export_produits_excel():
         ws.cell(row=row_num, column=8, value=p.categorie.nom if p.categorie else '')
         ws.cell(row=row_num, column=9, value='Oui' if p.est_disponible else 'Non')
 
-        # Appliquer les bordures
         for col in range(1, 10):
             ws.cell(row=row_num, column=col).border = border
             ws.cell(row=row_num, column=col).alignment = Alignment(vertical="center")
@@ -605,7 +604,6 @@ def export_produits_excel():
     footer_cell.font = Font(size=9, italic=True)
     footer_cell.alignment = Alignment(horizontal="center", vertical="center")
 
-    # Sauvegarder
     output = io.BytesIO()
     wb.save(output)
     output.seek(0)

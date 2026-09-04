@@ -1,37 +1,38 @@
+import cloudinary
+import cloudinary.uploader
 import os
-import uuid
-from werkzeug.utils import secure_filename
-from flask import current_app
 
-# Extensions autorisées
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-
-
-def allowed_file(filename):
-    """Vérifie si l'extension du fichier est autorisée"""
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+# Configurer Cloudinary
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET')
+)
 
 
 def upload_image(file, subfolder='produits'):
-    """
-    Sauvegarde une image et retourne le chemin relatif.
-    """
+    """Upload une image sur Cloudinary"""
     if not file or file.filename == '':
         return None
 
-    if not allowed_file(file.filename):
-        raise ValueError('Format de fichier non supporté. Utilisez JPG, PNG, GIF ou WEBP.')
-
-    # Générer un nom unique
+    # Vérifier les extensions autorisées
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
     ext = file.filename.rsplit('.', 1)[1].lower()
-    filename = f"{uuid.uuid4().hex}.{ext}"
+    if ext not in ALLOWED_EXTENSIONS:
+        raise ValueError('Format de fichier non supporté.')
 
-    # Chemin de sauvegarde
-    upload_dir = os.path.join('app', 'views', 'static', 'images', subfolder)
-    os.makedirs(upload_dir, exist_ok=True)
-
-    filepath = os.path.join(upload_dir, filename)
-    file.save(filepath)
-
-    # Retourner le chemin relatif pour la base de données
-    return f"images/{subfolder}/{filename}"
+    try:
+        # Upload vers Cloudinary
+        result = cloudinary.uploader.upload(
+            file,
+            folder=f"mdl-business/{subfolder}",
+            transformation=[
+                {'width': 800, 'height': 800, 'crop': 'limit'},
+                {'quality': 'auto'},
+                {'fetch_format': 'auto'}
+            ]
+        )
+        return result['secure_url']  # URL permanente
+    except Exception as e:
+        print(f"❌ Erreur upload Cloudinary: {e}")
+        return None
