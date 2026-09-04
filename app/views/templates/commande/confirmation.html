@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmation de commande - MDL Business{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- EN-TÊTE                                       -->
+    <!-- ============================================ -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-check-circle text-success me-2"></i>Commande confirmée</h2>
+        <div>
+            <a href="{{ url_for('commande.historique') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Mes commandes
+            </a>
+            <a href="{{ url_for('accueil') }}" class="btn btn-primary ms-2">
+                <i class="fas fa-home me-2"></i>Accueil
+            </a>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MESSAGE DE CONFIRMATION                      -->
+    <!-- ============================================ -->
+    <div class="alert alert-success shadow-sm mb-4">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-check-circle fa-3x me-3 text-success"></i>
+            <div>
+                <h4 class="alert-heading mb-1">✅ Commande confirmée !</h4>
+                <p class="mb-0">
+                    Merci <strong>{{ commande.prenom }}</strong> pour votre commande 
+                    <strong>#{{ commande.reference }}</strong>.<br>
+                    
+                    {% if commande.telephone %}
+                        <i class="fab fa-whatsapp text-success me-1"></i>
+                        Vous recevrez les informations de suivi par WhatsApp sur 
+                        <strong>{{ commande.telephone }}</strong>.
+                    {% else %}
+                        <i class="fas fa-info-circle text-warning me-1"></i>
+                        <span class="text-warning">Aucun numéro WhatsApp renseigné.</span>
+                        <a href="{{ url_for('commande.detail', commande_id=commande.id) }}" 
+                           class="text-decoration-none">
+                            Ajouter un numéro
+                        </a>
+                    {% endif %}
+                    <br>
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        Livraison estimée : 3 à 5 jours ouvrés
+                    </small>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- ============================================ -->
+        <!-- COLONNE GAUCHE - DÉTAILS                     -->
+        <!-- ============================================ -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Commande #{{ commande.reference }}</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Prix unitaire</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ligne in commande.lignes %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                {% if ligne.produit_image %}
+                                                    <img src="{{ url_for('static', filename='uploads/produits/' + ligne.produit_image) }}" 
+                                                         alt="{{ ligne.nom_produit }}"
+                                                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                                {% else %}
+                                                    <div style="width: 40px; height: 40px; background: #f8f9fa; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="fas fa-box text-muted"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <strong>{{ ligne.nom_produit }}</strong>
+                                            </div>
+                                        </td>
+                                        <td>{{ ligne.quantite }}</td>
+                                        <td>{{ "%.2f"|format(ligne.prix_unitaire) }} $</td>
+                                        <td class="text-end">
+                                            <strong>{{ "%.2f"|format(ligne.prix_unitaire * ligne.quantite) }} $</strong>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td colspan="3" class="text-end">Total</td>
+                                    <td class="text-end text-primary">{{ "%.2f"|format(commande.total) }} $</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suivi de la commande -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-timeline me-2"></i>Suivi de la commande</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item completed">
+                            <div class="timeline-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Commande passée</h6>
+                                <p class="text-muted small">{{ commande.date_creation.strftime('%d/%m/%Y à %H:%M') }}</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Paiement confirmé</h6>
+                                <p class="text-muted small">En attente de confirmation</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Expédition</h6>
+                                <p class="text-muted small">En attente</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Livraison</h6>
+                                <p class="text-muted small">En attente</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- COLONNE DROITE - RÉSUMÉ                      -->
+        <!-- ============================================ -->
+        <div class="col-lg-4">
+            <!-- QR Code -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-qrcode me-2"></i>Suivi rapide</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if commande.qr_code %}
+                        <img src="{{ url_for('static', filename=commande.qr_code) }}" 
+                             alt="QR Code de la commande" 
+                             style="width: 150px; height: 150px;"
+                             class="img-fluid mb-2 border rounded p-1">
+                        <p class="text-muted small">
+                            <i class="fas fa-qrcode me-1"></i>
+                            Scannez le QR Code pour suivre votre commande
+                        </p>
+                        <a href="{{ url_for('commande.suivi', reference=commande.reference) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i>Ouvrir le suivi
+                        </a>
+                    {% else %}
+                        <div class="py-3">
+                            <i class="fas fa-qrcode fa-5x text-muted mb-2"></i>
+                            <p class="text-muted small">QR Code disponible bientôt</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Résumé -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Résumé de la commande</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Sous-total</span>
+                        <span>{{ "%.2f"|format(commande.sous_total or commande.total) }} $</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Livraison</span>
+                        <span>{{ "%.2f"|format(commande.frais_livraison or 0) }} $</span>
+                    </div>
+                    {% if commande.reduction and commande.reduction > 0 %}
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span class="text-muted">Réduction</span>
+                            <span>-{{ "%.2f"|format(commande.reduction) }} $</span>
+                        </div>
+                    {% endif %}
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <h5 class="mb-0">Total</h5>
+                        <h5 class="text-success mb-0">{{ "%.2f"|format(commande.total) }} $</h5>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Statut</span>
+                        <span class="badge bg-success">Confirmée</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Date</span>
+                        <span>{{ commande.date_creation.strftime('%d/%m/%Y %H:%M') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations de livraison -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Livraison</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-0">
+                        <strong>{{ commande.prenom }} {{ commande.nom }}</strong><br>
+                        {% if commande.adresse_livraison %}
+                            {{ commande.adresse_livraison|replace('\n', '<br>')|safe }}<br>
+                        {% endif %}
+                        {% if commande.code_postal %}{{ commande.code_postal }} {% endif %}
+                        {% if commande.ville %}{{ commande.ville }}<br>{% endif %}
+                        {% if commande.pays %}{{ commande.pays }}<br>{% endif %}
+                        {% if commande.telephone %}
+                            <strong>Tél :</strong> {{ commande.telephone }}
+                        {% else %}
+                            <span class="text-muted">Téléphone non renseigné</span>
+                        {% endif %}
+                    </p>
+                    <hr>
+                    <p class="small text-muted mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Un email de confirmation vous a été envoyé.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Suivi WhatsApp -->
+            <div class="card shadow-sm mt-3 border-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fab fa-whatsapp fa-2x text-success"></i>
+                        <div>
+                            <h6 class="mb-0 text-success">Suivi par WhatsApp</h6>
+                            <small class="text-muted">
+                                {% if commande.telephone %}
+                                    Les notifications seront envoyées au <strong>{{ commande.telephone }}</strong>
+                                {% else %}
+                                    <span class="text-warning">Aucun numéro WhatsApp renseigné</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ACTIONS                                     -->
+    <!-- ============================================ -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm bg-light">
+                <div class="card-body d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{{ url_for('commande.historique') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>Voir mes commandes
+                    </a>
+                    <a href="{{ url_for('produit.liste_produits') }}" class="btn btn-primary">
+                        <i class="fas fa-shopping-bag me-2"></i>Continuer mes achats
+                    </a>
+                    <a href="{{ url_for('accueil') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home me-2"></i>Retour à l'accueil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* --- Timeline --- */
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+    border-left: 2px solid #e9ecef;
+    padding-left: 20px;
+}
+
+.timeline-item:last-child {
+    border-left: 2px solid transparent;
+}
+
+.timeline-item .timeline-icon {
+    position: absolute;
+    left: -10px;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #e9ecef;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.5rem;
+}
+
+.timeline-item.completed .timeline-icon {
+    background: #28a745;
+    color: white;
+}
+
+.timeline-item .timeline-content h6 {
+    margin-bottom: 2px;
+    font-size: 0.9rem;
+}
+
+.timeline-item .timeline-content p {
+    margin-bottom: 0;
+}
+
+.timeline-item.completed .timeline-content h6 {
+    color: #28a745;
+}
+
+/* --- Table --- */
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+/* --- WhatsApp --- */
+.text-warning {
+    color: #ffc107 !important;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .timeline {
+        padding-left: 20px;
+    }
+    .timeline-item {
+        padding-left: 15px;
+        padding-bottom: 15px;
+    }
+}
+</style>
+{% endblock %}

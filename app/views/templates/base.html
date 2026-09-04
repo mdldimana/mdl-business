@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MDL Business{% endblock %}</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --navbar-bg: #0f172a;
+            --navbar-text: #ffffff;
+            --body-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --transition-speed: 0.3s;
+        }
+
+        [data-bs-theme="dark"] {
+            --navbar-bg: #0a0e1a;
+            --body-bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            transition: background-color var(--transition-speed) ease, 
+                        color var(--transition-speed) ease,
+                        border-color var(--transition-speed) ease,
+                        box-shadow var(--transition-speed) ease;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--body-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+        }
+
+        /* ============================================ */
+        /* NAVBAR MODERNE                              */
+        /* ============================================ */
+        .navbar-custom {
+            background: var(--navbar-bg) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.75rem 0;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar-custom .navbar-brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: -0.5px;
+            color: #ffffff !important;
+        }
+
+        .navbar-custom .navbar-brand i {
+            color: #60a5fa;
+        }
+
+        .navbar-custom .nav-link {
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .navbar-custom .nav-link:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .navbar-custom .nav-link.active {
+            color: #ffffff !important;
+            background: rgba(96, 165, 250, 0.15);
+        }
+
+        .navbar-custom .nav-link i {
+            font-size: 1rem;
+        }
+
+        /* Badge panier */
+        #panier-badge {
+            background: #ef4444 !important;
+            font-size: 0.6rem;
+            padding: 0.2rem 0.5rem;
+            min-width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--navbar-bg);
+            font-weight: 600;
+        }
+
+        /* User menu */
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0.8rem;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .user-menu .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .user-menu .user-name {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* ============================================ */
+        /* BOUTON THEME                                */
+        /* ============================================ */
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            padding: 0;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: rotate(30deg);
+        }
+
+        .theme-toggle .sun-icon {
+            display: none;
+        }
+        .theme-toggle .moon-icon {
+            display: block;
+        }
+
+        [data-bs-theme="dark"] .theme-toggle .sun-icon {
+            display: block;
+        }
+        [data-bs-theme="dark"] .theme-toggle .moon-icon {
+            display: none;
+        }
+
+        /* ============================================ */
+        /* CARTES ET CONTENU                           */
+        /* ============================================ */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px var(--shadow-color);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 30px var(--shadow-color);
+        }
+
+        /* ============================================ */
+        /* FLASH MESSAGES                              */
+        /* ============================================ */
+        .alert {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        /* ============================================ */
+        /* RESPONSIVE                                  */
+        /* ============================================ */
+        @media (max-width: 991.98px) {
+            .navbar-custom .navbar-nav {
+                padding-top: 0.5rem;
+            }
+            .navbar-custom .nav-link {
+                padding: 0.6rem 0.8rem;
+            }
+            .user-menu {
+                padding: 0.3rem 0.6rem;
+            }
+            .user-menu .user-name {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .navbar-custom .navbar-brand {
+                font-size: 1.1rem;
+            }
+            .theme-toggle {
+                width: 34px;
+                height: 34px;
+                font-size: 0.85rem;
+            }
+            .user-menu .user-name {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ============================================ -->
+    <!-- NAVBAR                                       -->
+    <!-- ============================================ -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('accueil') }}">
+                <i class="fas fa-store me-2"></i>MDL Business
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Menu principal -->
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'accueil' %}active{% endif %}" 
+                           href="{{ url_for('accueil') }}">
+                            <i class="fas fa-home me-1"></i>Accueil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint and 'produit' in request.endpoint %}active{% endif %}" 
+                           href="{{ url_for('produit.liste_produits') }}">
+                            <i class="fas fa-box me-1"></i>Produits
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint and 'services' in request.endpoint %}active{% endif %}" 
+                           href="{{ url_for('produit.liste_services') }}">
+                            <i class="fas fa-concierge-bell me-1"></i>Services
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint and 'panier' in request.endpoint %}active{% endif %} position-relative" 
+                           href="{{ url_for('panier.voir_panier') }}">
+                            <i class="fas fa-shopping-cart me-1"></i>Panier
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" 
+                                  id="panier-badge"
+                                  style="display: {% if session.panier and session.panier.values()|sum > 0 %}flex{% else %}none{% endif %};">
+                                {{ session.panier.values()|sum if session.panier else 0 }}
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Menu de droite -->
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+                    <!-- Bouton thème -->
+                    <li class="nav-item">
+                        <button class="theme-toggle" id="themeToggle" title="Changer de thème">
+                            <i class="fas fa-sun sun-icon"></i>
+                            <i class="fas fa-moon moon-icon"></i>
+                        </button>
+                    </li>
+
+                    <!-- Utilisateur -->
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <div class="user-menu">
+                                <div class="user-avatar">
+                                    {{ (current_user.prenom or current_user.email)[0]|upper }}
+                                </div>
+                                <span class="user-name">
+                                    {{ current_user.prenom or current_user.email }}
+                                    {% if current_user.est_admin %}
+                                        <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem; padding: 0.15rem 0.5rem;">Admin</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.deconnexion') }}" style="color: rgba(255,255,255,0.5) !important;">
+                                <i class="fas fa-sign-out-alt me-1"></i>
+                                <span class="d-none d-lg-inline">Déconnexion</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.connexion') }}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Connexion
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-primary btn-sm text-white px-3" 
+                               href="{{ url_for('auth.inscription') }}" 
+                               style="background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; border-radius: 50px; padding: 0.4rem 1.2rem;">
+                                <i class="fas fa-user-plus me-1"></i>Inscription
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================ -->
+    <!-- FLASH MESSAGES                               -->
+    <!-- ============================================ -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% elif category == 'warning' %}warning{% else %}info-circle{% endif %} me-2"></i>
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- ============================================ -->
+    <!-- CONTENU PRINCIPAL                            -->
+    <!-- ============================================ -->
+    <main class="py-4">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- ============================================ -->
+    <!-- SCRIPTS                                      -->
+    <!-- ============================================ -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ============================================ -->
+        // GESTION DU THEME (CLAIR/SOMBRE)
+        // ============================================ -->
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const htmlElement = document.documentElement;
+            
+            // Récupérer le thème sauvegardé
+            let savedTheme = localStorage.getItem('theme') || 'light';
+            
+            // Appliquer le thème
+            function setTheme(theme) {
+                htmlElement.setAttribute('data-bs-theme', theme);
+                localStorage.setItem('theme', theme);
+                
+                // Mettre à jour l'icône du bouton
+                const sunIcon = themeToggle.querySelector('.sun-icon');
+                const moonIcon = themeToggle.querySelector('.moon-icon');
+                if (theme === 'dark') {
+                    sunIcon.style.display = 'block';
+                    moonIcon.style.display = 'none';
+                } else {
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'block';
+                }
+            }
+            
+            // Appliquer le thème sauvegardé
+            setTheme(savedTheme);
+            
+            // Écouter le clic sur le bouton
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                setTheme(newTheme);
+            });
+        });
+
+        // ============================================ -->
+        // METTRE À JOUR LE BADGE DU PANIER
+        // ============================================ -->
+        function updateCartBadge() {
+            fetch('/api/panier/total')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('panier-badge');
+                    if (badge) {
+                        const total = data.total || 0;
+                        badge.textContent = total;
+                        badge.style.display = total > 0 ? 'flex' : 'none';
+                    }
+                })
+                .catch(error => console.error('Erreur:', error));
+        }
+
+        // Mettre à jour le badge toutes les 30 secondes
+        setInterval(updateCartBadge, 30000);
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

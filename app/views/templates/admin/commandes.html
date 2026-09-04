@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des commandes - Administration{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- EN-TÊTE                                       -->
+    <!-- ============================================ -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-shopping-cart me-2"></i>Gestion des commandes</h2>
+        <div>
+            <a href="{{ url_for('admin.tableau_bord') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- STATISTIQUES DES COMMANDES                   -->
+    <!-- ============================================ -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-2">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Total</h6>
+                    <h3 class="text-primary">{{ commandes|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">En attente</h6>
+                    <h3 class="text-warning">{{ commandes|selectattr('statut', 'equalto', 'en_attente')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Payées</h6>
+                    <h3 class="text-info">{{ commandes|selectattr('statut', 'equalto', 'payee')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Expédiées</h6>
+                    <h3 class="text-primary">{{ commandes|selectattr('statut', 'equalto', 'expediee')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Livrées</h6>
+                    <h3 class="text-success">{{ commandes|selectattr('statut', 'equalto', 'livree')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Annulées</h6>
+                    <h3 class="text-danger">{{ commandes|selectattr('statut', 'equalto', 'annulee')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- FILTRES ET RECHERCHE                         -->
+    <!-- ============================================ -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtrer par statut</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-filter"></i></span>
+                        <select name="statut" class="form-select" onchange="this.form.submit()">
+                            <option value="">Tous les statuts</option>
+                            {% for s in statuts %}
+                                <option value="{{ s }}" {% if statut_filtre == s %}selected{% endif %}>
+                                    {{ s|replace('_', ' ')|title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Date de début</label>
+                    <input type="date" name="date_debut" class="form-control" value="{{ date_debut or '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Date de fin</label>
+                    <input type="date" name="date_fin" class="form-control" value="{{ date_fin or '' }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="d-flex gap-2 w-100">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="fas fa-search me-2"></i>Filtrer
+                        </button>
+                        <a href="{{ url_for('admin.gestion_commandes') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- LISTE DES COMMANDES                          -->
+    <!-- ============================================ -->
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Liste des commandes</h5>
+            <div>
+                <!-- BOUTON EXPORT PDF -->
+                <a href="{{ url_for('admin.export_commandes_pdf') }}{% if statut_filtre %}?statut={{ statut_filtre }}{% endif %}" 
+                   class="btn btn-sm btn-danger me-2" 
+                   title="Exporter en PDF">
+                    <i class="fas fa-file-pdf me-1"></i>PDF
+                </a>
+                <!-- BOUTON EXPORT EXCEL -->
+                <a href="{{ url_for('admin.export_commandes_excel') }}{% if statut_filtre %}?statut={{ statut_filtre }}{% endif %}" 
+                   class="btn btn-sm btn-success me-2" 
+                   title="Exporter en Excel">
+                    <i class="fas fa-file-excel me-1"></i>Excel
+                </a>
+                <span class="badge bg-light text-dark">
+                    {{ commandes|length }} commande(s)
+                </span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Référence</th>
+                            <th>Client</th>
+                            <th>Total</th>
+                            <th>Statut</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for commande in commandes %}
+                            <tr>
+                                <td>
+                                    <strong>#{{ commande.reference }}</strong>
+                                    {% if commande.est_urgente %}
+                                        <span class="badge bg-danger ms-1">
+                                            <i class="fas fa-exclamation-circle"></i> Urgent
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ commande.prenom }} {{ commande.nom }}
+                                    <br>
+                                    <small class="text-muted">{{ commande.email }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ "%.2f"|format(commande.total) }}$</strong>
+                                    <br>
+                                    <small class="text-muted">{{ commande.lignes|length or 0 }} article(s)</small>
+                                </td>
+                                <td>
+                                    <form method="POST" 
+                                          action="{{ url_for('admin.modifier_statut', commande_id=commande.id) }}"
+                                          class="d-flex gap-2 align-items-center">
+                                        <select name="statut" class="form-select form-select-sm" 
+                                                style="width: 140px;" 
+                                                onchange="this.form.querySelector('button[type=submit]').click()">
+                                            {% for s in statuts %}
+                                                <option value="{{ s }}" 
+                                                        {% if commande.statut == s %}selected{% endif %}>
+                                                    {{ s|replace('_', ' ')|title }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-primary" title="Mettre à jour le statut">
+                                            <i class="fas fa-save"></i>
+                                        </button>
+                                    </form>
+                                    <span class="badge 
+                                        {% if commande.statut == 'en_attente' %}bg-warning
+                                        {% elif commande.statut == 'payee' %}bg-info
+                                        {% elif commande.statut == 'expediee' %}bg-primary
+                                        {% elif commande.statut == 'livree' %}bg-success
+                                        {% elif commande.statut == 'annulee' %}bg-danger
+                                        {% endif %}">
+                                        {{ commande.statut|replace('_', ' ')|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ commande.date_creation.strftime('%d/%m/%Y') }}
+                                        <br>
+                                        {{ commande.date_creation.strftime('%H:%M') }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('commande.detail', commande_id=commande.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Voir les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('commande.facture_pdf', commande_id=commande.id) }}" 
+                                           class="btn btn-sm btn-outline-danger" title="Télécharger la facture" target="_blank">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                        {% if commande.statut != 'annulee' %}
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    onclick="annulerCommande({{ commande.id }}, '{{ commande.reference }}')"
+                                                    title="Annuler la commande">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        {% if not commandes %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-shopping-cart fa-3x d-block mb-3"></i>
+                                    <p>Aucune commande trouvée.</p>
+                                    {% if statut_filtre or date_debut or date_fin %}
+                                        <p class="small">Essayez de modifier vos filtres.</p>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ACTIONS RAPIDES                              -->
+    <!-- ============================================ -->
+    <div class="row g-3 mt-4">
+        <div class="col-md-4">
+            <div class="card bg-light border-danger">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                    <h6>Exporter PDF</h6>
+                    <a href="{{ url_for('admin.export_commandes_pdf') }}{% if statut_filtre %}?statut={{ statut_filtre }}{% endif %}" 
+                       class="btn btn-danger btn-sm">
+                        <i class="fas fa-file-pdf me-1"></i>PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-excel fa-2x text-success mb-2"></i>
+                    <h6>Exporter Excel</h6>
+                    <a href="{{ url_for('admin.export_commandes_excel') }}{% if statut_filtre %}?statut={{ statut_filtre }}{% endif %}" 
+                       class="btn btn-success btn-sm">
+                        <i class="fas fa-file-excel me-1"></i>Excel
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-bar fa-2x text-info mb-2"></i>
+                    <h6>Statistiques</h6>
+                    <a href="{{ url_for('admin.tableau_bord') }}" class="btn btn-info btn-sm text-white">
+                        <i class="fas fa-chart-pie me-1"></i>Voir stats
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT                                   -->
+<!-- ============================================ -->
+<script>
+function annulerCommande(id, reference) {
+    if (confirm(`Voulez-vous vraiment annuler la commande #${reference} ?\nCette action est irréversible.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/commande/annuler/${id}`;
+        
+        const confirmInput = document.createElement('input');
+        confirmInput.type = 'hidden';
+        confirmInput.name = 'confirm';
+        confirmInput.value = 'yes';
+        form.appendChild(confirmInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Auto-submit du formulaire de changement de statut
+document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('select[name="statut"]');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            const form = this.closest('form');
+            if (form) {
+                form.submit();
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+.badge {
+    font-weight: 500;
+}
+.btn-group .btn {
+    padding: 0.25rem 0.5rem;
+}
+@media print {
+    .btn, .btn-group, form, .no-print {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter un utilisateur - Administration{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- EN-TÊTE                                       -->
+    <!-- ============================================ -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user-plus me-2"></i>Ajouter un utilisateur</h2>
+        <div>
+            <a href="{{ url_for('admin.gestion_utilisateurs') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Retour
+            </a>
+            <a href="{{ url_for('admin.tableau_bord') }}" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+            </a>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- FORMULAIRE                                   -->
+    <!-- ============================================ -->
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Nouvel utilisateur</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="formAjoutUtilisateur" novalidate>
+                        <!-- Informations personnelles -->
+                        <h6 class="text-primary mb-3"><i class="fas fa-id-card me-2"></i>Informations personnelles</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="prenom" class="form-label fw-bold">
+                                    Prénom <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       name="prenom" 
+                                       id="prenom" 
+                                       class="form-control" 
+                                       placeholder="Jean" 
+                                       required 
+                                       minlength="2"
+                                       maxlength="50">
+                                <div class="invalid-feedback">Veuillez saisir un prénom valide (2-50 caractères).</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="nom" class="form-label fw-bold">
+                                    Nom <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       name="nom" 
+                                       id="nom" 
+                                       class="form-control" 
+                                       placeholder="Dupont" 
+                                       required 
+                                       minlength="2"
+                                       maxlength="50">
+                                <div class="invalid-feedback">Veuillez saisir un nom valide (2-50 caractères).</div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Informations de connexion -->
+                        <h6 class="text-primary mb-3"><i class="fas fa-key me-2"></i>Informations de connexion</h6>
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-bold">
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" 
+                                   name="email" 
+                                   id="email" 
+                                   class="form-control" 
+                                   placeholder="jean.dupont@email.com" 
+                                   required>
+                            <div class="invalid-feedback">Veuillez saisir une adresse email valide.</div>
+                            <small class="text-muted">L'email servira d'identifiant de connexion.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="mot_de_passe" class="form-label fw-bold">
+                                Mot de passe <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="password" 
+                                       name="mot_de_passe" 
+                                       id="mot_de_passe" 
+                                       class="form-control" 
+                                       placeholder="••••••••" 
+                                       required 
+                                       minlength="8">
+                                <button class="btn btn-outline-secondary" 
+                                        type="button" 
+                                        id="togglePassword"
+                                        title="Afficher/Masquer le mot de passe">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">Le mot de passe doit contenir au moins 8 caractères.</div>
+                            <div class="progress mt-2" style="height: 5px;">
+                                <div id="passwordStrength" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                            </div>
+                            <small class="text-muted" id="passwordHelp">Minimum 8 caractères</small>
+                        </div>
+
+                        <hr>
+
+                        <!-- Rôle et statut -->
+                        <h6 class="text-primary mb-3"><i class="fas fa-user-cog me-2"></i>Permissions</h6>
+                        <div class="mb-3">
+                            <label for="role" class="form-label fw-bold">
+                                Rôle <span class="text-danger">*</span>
+                            </label>
+                            <select name="role" id="role" class="form-select" required>
+                                <option value="client" selected>Client (public)</option>
+                                <option value="manager">Manager</option>
+                                <option value="comptable">Comptable</option>
+                                <option value="admin">Administrateur</option>
+                            </select>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i>
+                                <span id="roleDescription">Accès à la boutique et au suivi des commandes.</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check form-switch">
+                            <input type="checkbox" 
+                                   name="est_actif" 
+                                   id="est_actif" 
+                                   class="form-check-input" 
+                                   checked>
+                            <label class="form-check-label fw-bold" for="est_actif">
+                                <i class="fas fa-check-circle text-success me-1"></i>
+                                Compte actif
+                            </label>
+                            <div class="form-text">Désactiver pour bloquer temporairement l'accès.</div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Boutons d'action -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin.gestion_utilisateurs') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Créer l'utilisateur
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Informations supplémentaires -->
+            <div class="card bg-light mt-3">
+                <div class="card-body">
+                    <h6 class="mb-2"><i class="fas fa-info-circle text-primary me-2"></i>À savoir</h6>
+                    <ul class="small text-muted mb-0">
+                        <li>Les champs marqués d'un <span class="text-danger">*</span> sont obligatoires.</li>
+                        <li>Le mot de passe doit contenir au moins 8 caractères.</li>
+                        <li>L'utilisateur recevra un email de confirmation après la création.</li>
+                        <li>Seuls les administrateurs peuvent créer des comptes.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT                                   -->
+<!-- ============================================ -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ============================================ -->
+    // AFFICHAGE/MASQUAGE DU MOT DE PASSE
+    // ============================================ -->
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('mot_de_passe');
+    
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('fa-eye');
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+
+    // ============================================ -->
+    // INDICATEUR DE FORCE DU MOT DE PASSE
+    // ============================================ -->
+    const passwordStrength = document.getElementById('passwordStrength');
+    const passwordHelp = document.getElementById('passwordHelp');
+    
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        let strength = 0;
+        let message = '';
+
+        if (password.length >= 8) strength += 25;
+        if (password.length >= 12) strength += 25;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
+        if (/\d/.test(password) && /[^a-zA-Z0-9]/.test(password)) strength += 25;
+
+        if (strength === 0) {
+            message = 'Très faible';
+            passwordStrength.className = 'progress-bar bg-danger';
+        } else if (strength <= 25) {
+            message = 'Faible';
+            passwordStrength.className = 'progress-bar bg-danger';
+        } else if (strength <= 50) {
+            message = 'Moyen';
+            passwordStrength.className = 'progress-bar bg-warning';
+        } else if (strength <= 75) {
+            message = 'Fort';
+            passwordStrength.className = 'progress-bar bg-info';
+        } else {
+            message = 'Très fort';
+            passwordStrength.className = 'progress-bar bg-success';
+        }
+
+        passwordStrength.style.width = strength + '%';
+        passwordHelp.textContent = message + (password.length > 0 ? ` (${strength}%)` : '');
+    });
+
+    // ============================================ -->
+    // DESCRIPTION DES RÔLES
+    // ============================================ -->
+    const roleSelect = document.getElementById('role');
+    const roleDescription = document.getElementById('roleDescription');
+    
+    const roleDescriptions = {
+        'client': 'Accès à la boutique et au suivi des commandes.',
+        'manager': 'Gestion des produits, catégories et commandes.',
+        'comptable': 'Accès aux finances et aux rapports de vente.',
+        'admin': 'Accès complet à toutes les fonctionnalités du site.'
+    };
+    
+    roleSelect.addEventListener('change', function() {
+        roleDescription.textContent = roleDescriptions[this.value] || '';
+    });
+
+    // ============================================ -->
+    // VALIDATION DU FORMULAIRE
+    // ============================================ -->
+    const form = document.getElementById('formAjoutUtilisateur');
+    
+    form.addEventListener('submit', function(event) {
+        // Vérification du mot de passe
+        if (passwordInput.value.length < 8) {
+            event.preventDefault();
+            passwordInput.classList.add('is-invalid');
+            passwordInput.focus();
+            return false;
+        }
+
+        // Vérification de l'email
+        const emailInput = document.getElementById('email');
+        if (!emailInput.value.includes('@')) {
+            event.preventDefault();
+            emailInput.classList.add('is-invalid');
+            emailInput.focus();
+            return false;
+        }
+    });
+
+    // ============================================ -->
+    // VALIDATION EN TEMPS RÉEL
+    // ============================================ -->
+    const inputs = document.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.form-control:focus, .form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+.form-switch .form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+.progress {
+    border-radius: 10px;
+    background-color: #e9ecef;
+}
+.card-header {
+    border-bottom: none;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+
+{% block title %}Mon panier - MDL Business{% endblock %}
+
+{% block content %}
+<div class="container py-2">  <!-- Réduit de py-4 à py-2 -->
+    <!-- ============================================ -->
+    <!-- EN-TÊTE                                       -->
+    <!-- ============================================ -->
+    <div class="d-flex justify-content-between align-items-center mb-3">  <!-- Réduit de mb-4 à mb-3 -->
+        <div>
+            <h2 class="mb-0"><i class="fas fa-shopping-cart text-primary me-2"></i>Mon panier</h2>  <!-- Supprimé mb-1 -->
+            <p class="text-muted small mb-0">
+                {% if produits %}
+                    {{ produits|sum(attribute='quantite') }} article(s) dans votre panier
+                {% else %}
+                    Votre panier est vide
+                {% endif %}
+            </p>
+        </div>
+        {% if produits %}
+            <button class="btn btn-outline-danger btn-sm" onclick="viderPanier()">
+                <i class="fas fa-trash me-1"></i>Vider le panier
+            </button>
+        {% endif %}
+    </div>
+
+    {% if produits %}
+        <div class="row g-3">  <!-- Réduit de g-4 à g-3 -->
+            <!-- ============================================ -->
+            <!-- COLONNE GAUCHE - LISTE DES PRODUITS          -->
+            <!-- ============================================ -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary text-white py-1">  <!-- Réduit de py-2 à py-1 -->
+                        <h6 class="mb-0"><i class="fas fa-list me-2"></i>Vos articles</h6>  <!-- Changé h5 à h6 -->
+                    </div>
+                    <div class="card-body p-0">
+                        {% for item in produits %}
+                            <div class="row align-items-center g-2 py-2 px-3 border-bottom" id="ligne-{{ item.produit.id }}">  <!-- Réduit py-3 à py-2 -->
+                                <!-- Image et nom -->
+                                <div class="col-md-5">
+                                    <div class="d-flex align-items-center gap-2">  <!-- Réduit gap-3 à gap-2 -->
+                                        {% if item.produit.image_principale %}
+                                            <img src="{{ url_for('static', filename=item.produit.image_principale) }}" 
+                                                 alt="{{ item.produit.nom }}"
+                                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">  <!-- Réduit 60px à 50px -->
+                                        {% else %}
+                                            <div style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-box text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0 fw-bold" style="font-size: 0.9rem;">{{ item.produit.nom }}</h6>  <!-- Ajouté font-size -->
+                                            <small class="text-muted" style="font-size: 0.7rem;">{{ item.produit.categorie.nom if item.produit.categorie else 'Général' }}</small>
+                                            {% if item.produit.en_promotion %}
+                                                <span class="badge bg-danger ms-1" style="font-size: 0.5rem;">Promo</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Prix -->
+                                <div class="col-md-2">
+                                    <div>
+                                        {% if item.produit.prix_promo and item.produit.prix_promo < item.produit.prix %}
+                                            <span class="text-muted text-decoration-line-through small d-block" style="font-size: 0.65rem;">
+                                                {{ "%.2f"|format(item.produit.prix) }}$
+                                            </span>
+                                            <span class="fw-bold text-danger" style="font-size: 0.9rem;">
+                                                {{ "%.2f"|format(item.produit.prix_promo) }}$
+                                            </span>
+                                        {% else %}
+                                            <span class="fw-bold" style="font-size: 0.9rem;">
+                                                {{ "%.2f"|format(item.produit.prix_actuel) }}$
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Quantité -->
+                                <div class="col-md-3">
+                                    <div class="input-group input-group-sm" style="max-width: 110px;">  <!-- Réduit 120px à 110px -->
+                                        <button class="btn btn-outline-secondary btn-qty" 
+                                                onclick="modifierQuantite({{ item.produit.id }}, -1)"
+                                                {% if item.quantite <= 1 %}disabled{% endif %}>
+                                            <i class="fas fa-minus" style="font-size: 0.7rem;"></i>
+                                        </button>
+                                        <input type="number" 
+                                               class="form-control text-center quantite-input" 
+                                               value="{{ item.quantite }}" 
+                                               min="1" 
+                                               max="{{ item.produit.stock }}"
+                                               data-produit-id="{{ item.produit.id }}"
+                                               style="width: 40px; border-radius: 0; font-size: 0.8rem; padding: 0;">
+                                        <button class="btn btn-outline-secondary btn-qty" 
+                                                onclick="modifierQuantite({{ item.produit.id }}, 1)"
+                                                {% if item.quantite >= item.produit.stock %}disabled{% endif %}>
+                                            <i class="fas fa-plus" style="font-size: 0.7rem;"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted d-block mt-1" style="font-size: 0.6rem;">
+                                        Stock: {{ item.produit.stock }}
+                                    </small>
+                                </div>
+
+                                <!-- Total et suppression -->
+                                <div class="col-md-2 text-end">
+                                    <div class="fw-bold text-primary" style="font-size: 0.9rem;">
+                                        {{ "%.2f"|format(item.produit.prix_actuel * item.quantite) }}$
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger mt-1" 
+                                            onclick="supprimerProduit({{ item.produit.id }})"
+                                            title="Supprimer"
+                                            style="padding: 2px 6px; font-size: 0.7rem;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="mt-2 d-flex flex-wrap gap-2">  <!-- Réduit mt-3 à mt-2 -->
+                    <a href="{{ url_for('produit.liste_produits') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i>Continuer mes achats
+                    </a>
+                    <button class="btn btn-outline-danger btn-sm" onclick="viderPanier()">
+                        <i class="fas fa-trash me-1"></i>Vider le panier
+                    </button>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- COLONNE DROITE - RÉSUMÉ                      -->
+            <!-- ============================================ -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0" style="position: sticky; top: 70px;">  <!-- Réduit top: 80px à 70px -->
+                    <div class="card-header bg-success text-white py-1">  <!-- Réduit py-2 à py-1 -->
+                        <h6 class="mb-0"><i class="fas fa-receipt me-2"></i>Résumé de la commande</h6>
+                    </div>
+                    <div class="card-body py-2">  <!-- Réduit padding -->
+                        <!-- Détails -->
+                        <div class="d-flex justify-content-between mb-1" style="font-size: 0.85rem;">  <!-- Réduit mb-2 à mb-1 -->
+                            <span class="text-muted">Sous-total</span>
+                            <span class="fw-bold">{{ "%.2f"|format(total) }}$</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1" style="font-size: 0.85rem;">
+                            <span class="text-muted">Livraison</span>
+                            <span class="text-success fw-bold">
+                                {% if total >= 50 %}
+                                    <i class="fas fa-check-circle me-1"></i>Offerte
+                                {% else %}
+                                    + {{ "%.2f"|format(5.00) }}$
+                                    <small class="text-muted d-block" style="font-size: 0.6rem;">(dès 50$)</small>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1" style="font-size: 0.85rem;">
+                            <span class="text-muted">Articles</span>
+                            <span>{{ produits|sum(attribute='quantite') }} article(s)</span>
+                        </div>
+
+                        <hr class="my-1">  <!-- Réduit my-1 -->
+
+                        <!-- Total -->
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-0">Total</h6>
+                            <h6 class="text-primary mb-0">
+                                {% if total >= 50 %}
+                                    {{ "%.2f"|format(total) }}$
+                                {% else %}
+                                    {{ "%.2f"|format(total + 5.00) }}$
+                                {% endif %}
+                            </h6>
+                        </div>
+
+                        <!-- Message livraison -->
+                        {% if total < 50 %}
+                            <div class="alert alert-warning alert-sm mt-2 mb-0 py-1" style="font-size: 0.7rem;">  <!-- Réduit padding -->
+                                <i class="fas fa-info-circle me-1"></i>
+                                Ajoutez {{ "%.2f"|format(50 - total) }}$ pour la livraison offerte.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success alert-sm mt-2 mb-0 py-1" style="font-size: 0.7rem;">
+                                <i class="fas fa-gift me-1"></i>
+                                Livraison offerte !
+                            </div>
+                        {% endif %}
+
+                        <!-- Bouton commander -->
+                        <a href="{{ url_for('commande.recapitulatif') }}" class="btn btn-success w-100 mt-2 py-1" style="font-size: 0.85rem;">  <!-- Réduit padding -->
+                            <i class="fas fa-check me-2"></i>Passer la commande
+                        </a>
+
+                        <!-- Paiement sécurisé -->
+                        <div class="text-center mt-2">  <!-- Réduit mt-3 à mt-2 -->
+                            <small class="text-muted" style="font-size: 0.65rem;">
+                                <i class="fas fa-lock me-1"></i>
+                                Paiement 100% sécurisé
+                            </small>
+                            <div class="mt-1">  <!-- Réduit mt-2 à mt-1 -->
+                                <i class="fab fa-cc-visa fa-lg me-1 text-muted"></i>
+                                <i class="fab fa-cc-mastercard fa-lg me-1 text-muted"></i>
+                                <i class="fab fa-cc-paypal fa-lg text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- ============================================ -->
+        <!-- PANIER VIDE                                  -->
+        <!-- ============================================ -->
+        <div class="text-center py-4">  <!-- Réduit py-5 à py-4 -->
+            <div class="mb-3">  <!-- Réduit mb-4 à mb-3 -->
+                <div class="bg-light rounded-circle d-inline-flex p-3" style="width: 100px; height: 100px;">  <!-- Réduit taille -->
+                    <i class="fas fa-shopping-cart fa-3x text-muted m-auto"></i>
+                </div>
+            </div>
+            <h4 class="fw-bold">Votre panier est vide</h4>  <!-- Changé h3 à h4 -->
+            <p class="text-muted">Découvrez nos produits et remplissez votre panier !</p>
+            <p class="text-muted small">
+                <i class="fas fa-info-circle me-1"></i>
+                Profitez de la livraison offerte dès 50$ d'achat.
+            </p>
+            <a href="{{ url_for('produit.liste_produits') }}" class="btn btn-primary mt-2">  <!-- Supprimé btn-lg -->
+                <i class="fas fa-shopping-bag me-2"></i>Voir les produits
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+/* --- Quantité --- */
+.btn-qty {
+    width: 28px;  /* Réduit de 32px à 28px */
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+    font-size: 0.7rem;
+}
+.btn-qty:hover {
+    background-color: #e9ecef;
+}
+.quantite-input {
+    width: 40px !important;  /* Réduit de 50px à 40px */
+    padding: 0;
+    text-align: center;
+    border-left: none;
+    border-right: none;
+    font-size: 0.8rem;
+}
+.quantite-input::-webkit-inner-spin-button,
+.quantite-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.quantite-input {
+    -moz-appearance: textfield;
+}
+
+/* --- Cartes --- */
+.card {
+    border-radius: 10px;  /* Réduit de 12px à 10px */
+    overflow: hidden;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .btn-qty {
+        width: 24px;
+        font-size: 0.6rem;
+    }
+    .quantite-input {
+        width: 35px !important;
+        font-size: 0.7rem;
+    }
+    .row .col-md-5, .row .col-md-2, .row .col-md-3, .row .col-md-2 {
+        margin-bottom: 4px;
+    }
+}
+</style>
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT                                   -->
+<!-- ============================================ -->
+<script>
+// ============================================ -->
+// FONCTIONS GLOBALES
+// ============================================ -->
+
+// Modifier la quantité
+window.modifierQuantite = function(produitId, delta) {
+    const input = document.querySelector(`.quantite-input[data-produit-id="${produitId}"]`);
+    if (!input) return;
+    
+    let newQuantite = parseInt(input.value) + delta;
+    if (newQuantite < 1) newQuantite = 1;
+    const max = parseInt(input.max) || 999;
+    if (newQuantite > max) newQuantite = max;
+    
+    if (newQuantite === parseInt(input.value)) return;
+    
+    input.value = newQuantite;
+    input.dispatchEvent(new Event('change'));
+};
+
+// Supprimer un produit
+window.supprimerProduit = function(produitId) {
+    if (!produitId) {
+        alert('Erreur: produit non identifié');
+        return;
+    }
+
+    if (!confirm('Supprimer cet article du panier ?')) {
+        return;
+    }
+
+    const btn = event.target.closest('button');
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+    btn.disabled = true;
+
+    fetch('/api/panier/supprimer', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({produit_id: produitId})
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.success) {
+            // Animation de suppression
+            const ligne = document.getElementById('ligne-' + produitId);
+            if (ligne) {
+                ligne.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                ligne.style.opacity = '0';
+                ligne.style.transform = 'translateX(-20px)';
+                setTimeout(function() {
+                    location.reload();
+                }, 300);
+            } else {
+                location.reload();
+            }
+        } else {
+            alert('Erreur: ' + data.message);
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    })
+    .catch(function(error) {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue');
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+    });
+};
+
+// Vider le panier
+window.viderPanier = function() {
+    if (!confirm('Voulez-vous vraiment vider votre panier ?\nCette action est irréversible.')) {
+        return;
+    }
+
+    const btn = event.target.closest('button');
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+    btn.disabled = true;
+
+    fetch('/api/panier/vider', {
+        method: 'POST'
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.message);
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    })
+    .catch(function(error) {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue');
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+    });
+};
+
+// ============================================ -->
+// ÉVÉNEMENTS DOM
+// ============================================ -->
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ JavaScript du panier chargé');
+
+    // Modification de la quantité
+    document.querySelectorAll('.quantite-input').forEach(function(input) {
+        input.addEventListener('change', function() {
+            const produitId = this.dataset.produitId;
+            let quantite = parseInt(this.value) || 1;
+            const max = parseInt(this.max) || 999;
+
+            if (quantite < 1) {
+                quantite = 1;
+                this.value = 1;
+            }
+            if (quantite > max) {
+                quantite = max;
+                this.value = max;
+                alert('Stock maximum disponible: ' + max);
+            }
+
+            fetch('/api/panier/quantite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    produit_id: parseInt(produitId),
+                    quantite: quantite
+                })
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + data.message);
+                }
+            })
+            .catch(function(error) {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

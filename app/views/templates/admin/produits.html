@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des produits - Administration{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- EN-TÊTE                                       -->
+    <!-- ============================================ -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-box me-2"></i>Gestion des produits</h2>
+        <div>
+            <a href="{{ url_for('admin.ajouter_produit') }}" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>Ajouter un produit
+            </a>
+            <a href="{{ url_for('admin.tableau_bord') }}" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-arrow-left me-2"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- STATISTIQUES DES PRODUITS                    -->
+    <!-- ============================================ -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Total</h6>
+                    <h3 class="text-primary">{{ produits|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Disponibles</h6>
+                    <h3 class="text-success">{{ produits|selectattr('est_disponible')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Indisponibles</h6>
+                    <h3 class="text-danger">{{ produits|rejectattr('est_disponible')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Rupture de stock</h6>
+                    <h3 class="text-warning">{{ produits|selectattr('stock', '<=', 0)|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- FILTRES ET RECHERCHE                         -->
+    <!-- ============================================ -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('admin.gestion_produits') }}" class="row g-3">
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" name="recherche" 
+                               placeholder="Rechercher un produit..." 
+                               value="{{ request.args.get('recherche', '') }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="categorie">
+                        <option value="">Toutes les catégories</option>
+                        {% for categorie in categories %}
+                            <option value="{{ categorie.id }}" 
+                                    {% if request.args.get('categorie')|int == categorie.id %}selected{% endif %}>
+                                {{ categorie.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="statut">
+                        <option value="">Tous les statuts</option>
+                        <option value="disponible" {% if request.args.get('statut') == 'disponible' %}selected{% endif %}>Disponible</option>
+                        <option value="indisponible" {% if request.args.get('statut') == 'indisponible' %}selected{% endif %}>Indisponible</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="stock">
+                        <option value="">Tous les stocks</option>
+                        <option value="rupture" {% if request.args.get('stock') == 'rupture' %}selected{% endif %}>Rupture (0)</option>
+                        <option value="bas" {% if request.args.get('stock') == 'bas' %}selected{% endif %}>Stock bas (≤ 5)</option>
+                        <option value="normal" {% if request.args.get('stock') == 'normal' %}selected{% endif %}>Stock normal (> 5)</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                </div>
+                <div class="col-md-1">
+                    <a href="{{ url_for('admin.gestion_produits') }}" class="btn btn-secondary w-100" title="Réinitialiser">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- LISTE DES PRODUITS                          -->
+    <!-- ============================================ -->
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Liste des produits</h5>
+            <div>
+                <!-- ============================================ -->
+                <!-- BOUTON EXPORT PDF AJOUTÉ                    -->
+                <!-- ============================================ -->
+                <a href="{{ url_for('admin.export_produits_pdf') }}" 
+                   class="btn btn-sm btn-danger me-2" 
+                   title="Exporter en PDF">
+                    <i class="fas fa-file-pdf me-1"></i>PDF
+                </a>
+                <span class="badge bg-light text-dark">
+                    {{ produits|length }} produit(s)
+                </span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Nom</th>
+                            <th>Catégorie</th>
+                            <th>Prix</th>
+                            <th>Stock</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for produit in produits %}
+                            <tr>
+                                <td><span class="badge bg-secondary">{{ produit.id }}</span></td>
+                                <td>
+                                    {% if produit.image_principale %}
+                                        <img src="{{ url_for('static', filename=produit.image_principale) }}" 
+                                             alt="{{ produit.nom }}" 
+                                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;"
+                                             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'bg-light rounded d-flex align-items-center justify-content-center\' style=\'width:50px;height:50px;border-radius:8px;\'><i class=\'fas fa-image text-muted fa-2x\'></i></div>'">
+                                    {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                             style="width: 50px; height: 50px; border-radius: 8px;">
+                                            <i class="fas fa-image text-muted fa-2x"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ produit.nom }}</strong>
+                                    {% if produit.prix_promo and produit.prix_promo < produit.prix %}
+                                        <span class="badge bg-danger ms-1">
+                                            <i class="fas fa-tag"></i> Promo
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if produit.categorie %}
+                                        <span class="badge bg-info">{{ produit.categorie.nom }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ "%.2f"|format(produit.prix_actuel) }}$</strong>
+                                    {% if produit.prix_promo and produit.prix_promo < produit.prix %}
+                                        <br>
+                                        <small class="text-muted text-decoration-line-through">
+                                            {{ "%.2f"|format(produit.prix) }}$
+                                        </small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if produit.stock <= 0 %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle me-1"></i>{{ produit.stock }}
+                                        </span>
+                                    {% elif produit.stock <= 5 %}
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ produit.stock }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>{{ produit.stock }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if produit.est_disponible %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Disponible
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle me-1"></i>Indisponible
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.modifier_produit', produit_id=produit.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('produit.detail_produit', slug=produit.slug) }}" 
+                                           class="btn btn-sm btn-outline-info" title="Voir sur le site" target="_blank">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="supprimerProduit({{ produit.id }}, '{{ produit.nom }}')"
+                                                title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        {% if not produits %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    <i class="fas fa-box fa-3x d-block mb-3"></i>
+                                    <p>Aucun produit trouvé.</p>
+                                    <a href="{{ url_for('admin.ajouter_produit') }}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-plus me-2"></i>Ajouter votre premier produit
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ACTIONS RAPIDES                              -->
+    <!-- ============================================ -->
+    <div class="row g-3 mt-4">
+        <div class="col-md-3">
+            <div class="card bg-light border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-plus-circle fa-2x text-primary mb-2"></i>
+                    <h6>Ajouter un produit</h6>
+                    <a href="{{ url_for('admin.ajouter_produit') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>Nouveau
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-tags fa-2x text-success mb-2"></i>
+                    <h6>Gérer les catégories</h6>
+                    <a href="{{ url_for('admin.gestion_categories') }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-edit me-1"></i>Catégories
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                    <h6>Exporter en PDF</h6>
+                    <a href="{{ url_for('admin.export_produits_pdf') }}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-file-pdf me-1"></i>PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light border-secondary">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-export fa-2x text-secondary mb-2"></i>
+                    <h6>Exporter Excel</h6>
+                    <a href="{{ url_for('admin.export_produits_excel') }}" class="btn btn-secondary btn-sm">
+    <i class="fas fa-file-excel me-1"></i>Excel
+</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT                                   -->
+<!-- ============================================ -->
+<script>
+function supprimerProduit(id, nom) {
+    if (confirm(`Voulez-vous vraiment supprimer le produit "${nom}" ?\nCette action est irréversible.`)) {
+        const btn = event.target.closest('button');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+        btn.disabled = true;
+        
+        fetch(`/admin/produit/supprimer/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else if (response.ok) {
+                window.location.reload();
+            } else {
+                throw new Error('Erreur lors de la suppression');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors de la suppression.');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
+    }
+}
+</script>
+
+<style>
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+.badge {
+    font-weight: 500;
+}
+.btn-group .btn {
+    padding: 0.25rem 0.5rem;
+}
+img {
+    border: 1px solid #dee2e6;
+}
+</style>
+{% endblock %}

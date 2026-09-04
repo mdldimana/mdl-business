@@ -1,0 +1,504 @@
+{% extends "base.html" %}
+
+{% block title %}{{ produit.nom }} - MDL Business{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- FIL D'ARIANE                                -->
+    <!-- ============================================ -->
+    <nav aria-label="Breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('accueil') }}" class="text-decoration-none">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('produit.liste_produits') }}" class="text-decoration-none">Produits</a></li>
+            {% if produit.categorie %}
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('produit.produits_par_categorie', slug=produit.categorie.slug) }}" class="text-decoration-none">
+                        {{ produit.categorie.nom }}
+                    </a>
+                </li>
+            {% endif %}
+            <li class="breadcrumb-item active">{{ produit.nom }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- ============================================ -->
+        <!-- COLONNE GAUCHE - IMAGE                       -->
+        <!-- ============================================ -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-img-wrapper position-relative" style="background: #f8f9fa; border-radius: 12px 12px 0 0; overflow: hidden;">
+                    {% if produit.image_principale %}
+                        <img src="{{ url_for('static', filename=produit.image_principale) }}" 
+                             alt="{{ produit.nom }}"
+                             class="img-fluid w-100"
+                             style="height: 400px; object-fit: contain; transition: transform 0.3s ease;"
+                             id="productImage">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center" style="height: 400px;">
+                            <i class="fas fa-image text-muted fa-6x"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Badge promotion -->
+                    {% if produit.prix_promo and produit.prix_promo < produit.prix %}
+                        <div class="position-absolute top-0 start-0 m-3 z-1">
+                            <span class="badge bg-danger rounded-pill px-3 py-2" style="font-size: 0.9rem;">
+                                <i class="fas fa-tag me-1"></i>-{{ ((1 - produit.prix_promo/produit.prix) * 100)|round|int }}%
+                            </span>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Badge stock -->
+                    <div class="position-absolute top-0 end-0 m-3 z-1">
+                        {% if produit.stock > 0 %}
+                            <span class="badge bg-success rounded-pill px-3 py-2" style="font-size: 0.8rem;">
+                                <i class="fas fa-check-circle me-1"></i>En stock
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger rounded-pill px-3 py-2" style="font-size: 0.8rem;">
+                                <i class="fas fa-times-circle me-1"></i>Rupture
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Miniatures (si plusieurs images) -->
+                    {% if produit.images and produit.images|length > 1 %}
+                        <div class="position-absolute bottom-0 start-0 end-0 p-2 text-center" style="background: rgba(0,0,0,0.3);">
+                            {% for img in produit.images[:4] %}
+                                <img src="{{ url_for('static', filename='uploads/produits/' + img) }}" 
+                                     alt="Miniature"
+                                     class="rounded mx-1"
+                                     style="width: 50px; height: 50px; object-fit: cover; cursor: pointer; border: 2px solid transparent;"
+                                     onmouseover="document.getElementById('productImage').src=this.src; this.style.borderColor='#0d6efd';"
+                                     onmouseout="this.style.borderColor='transparent';">
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- COLONNE DROITE - INFORMATIONS                -->
+        <!-- ============================================ -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <!-- Titre et catégorie -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h1 class="h2 fw-bold mb-0">{{ produit.nom }}</h1>
+                    </div>
+                    
+                    <!-- Évaluation -->
+                    <div class="mb-3">
+                        <span class="text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </span>
+                        <span class="text-muted small">(4.5/5 - 12 avis)</span>
+                    </div>
+
+                    <!-- Prix -->
+                    <div class="mb-4">
+                        {% if produit.prix_promo and produit.prix_promo < produit.prix %}
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="text-muted text-decoration-line-through fs-4">
+                                    {{ "%.2f"|format(produit.prix) }}$
+                                </span>
+                                <span class="text-danger display-5 fw-bold">
+                                    {{ "%.2f"|format(produit.prix_promo) }}$
+                                </span>
+                                <span class="badge bg-success rounded-pill" style="font-size: 0.8rem;">
+                                    Économisez {{ "%.2f"|format(produit.prix - produit.prix_promo) }}$
+                                </span>
+                            </div>
+                        {% else %}
+                            <span class="display-5 fw-bold text-primary">
+                                {{ "%.2f"|format(produit.prix) }}$
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold small text-uppercase text-muted">Description</h6>
+                        <p class="text-muted" style="line-height: 1.8;">
+                            {{ produit.description if produit.description else 'Aucune description disponible pour ce produit.' }}
+                        </p>
+                    </div>
+
+                    <!-- Caractéristiques -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold small text-uppercase text-muted">Caractéristiques</h6>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="bg-light p-2 rounded">
+                                    <small class="text-muted d-block">Catégorie</small>
+                                    <span class="fw-bold">
+                                        <a href="{{ url_for('produit.produits_par_categorie', slug=produit.categorie.slug) if produit.categorie else '#' }}" 
+                                           class="text-decoration-none">
+                                            {{ produit.categorie.nom if produit.categorie else 'Général' }}
+                                        </a>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-light p-2 rounded">
+                                    <small class="text-muted d-block">Stock disponible</small>
+                                    <span class="fw-bold">{{ produit.stock }} unités</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-light p-2 rounded">
+                                    <small class="text-muted d-block">Référence</small>
+                                    <span class="fw-bold">#{{ produit.id }}</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-light p-2 rounded">
+                                    <small class="text-muted d-block">Statut</small>
+                                    <span class="fw-bold">
+                                        {% if produit.stock > 0 %}
+                                            <span class="text-success">Disponible</span>
+                                        {% else %}
+                                            <span class="text-danger">Indisponible</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quantité et ajout au panier -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Quantité</label>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="input-group" style="width: 130px;">
+                                <button class="btn btn-outline-secondary btn-qty" type="button" id="qtyMinus">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" 
+                                       class="form-control text-center" 
+                                       id="qtyInput" 
+                                       value="1" 
+                                       min="1" 
+                                       max="{{ produit.stock if produit.stock > 0 else 1 }}"
+                                       style="border-radius: 0;">
+                                <button class="btn btn-outline-secondary btn-qty" type="button" id="qtyPlus">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <span class="text-muted small">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {{ produit.stock }} unités disponibles
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-primary btn-lg flex-grow-1 ajouter-panier" 
+                                data-produit-id="{{ produit.id }}"
+                                {% if produit.stock <= 0 %}disabled{% endif %}>
+                            <i class="fas fa-cart-plus me-2"></i>
+                            {% if produit.stock > 0 %}
+                                Ajouter au panier
+                            {% else %}
+                                Indisponible
+                            {% endif %}
+                        </button>
+                        <button class="btn btn-outline-danger btn-lg btn-favoris" 
+                                style="width: 60px;"
+                                title="Ajouter aux favoris">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
+
+                    <!-- Livraison -->
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-truck text-primary"></i>
+                                    <div>
+                                        <span class="d-block small fw-bold">Livraison</span>
+                                        <span class="text-muted small">Offerte dès 50$</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-undo text-primary"></i>
+                                    <div>
+                                        <span class="d-block small fw-bold">Retours</span>
+                                        <span class="text-muted small">30 jours satisfait</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- PRODUITS SIMILAIRES                         -->
+    <!-- ============================================ -->
+    {% if produits_similaires %}
+    <div class="mt-5">
+        <h4 class="mb-3"><i class="fas fa-thumbs-up text-primary me-2"></i>Produits similaires</h4>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+            {% for similaire in produits_similaires %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 hover-card">
+                        <div class="card-img-wrapper overflow-hidden" style="height: 150px; background: #f8f9fa;">
+                            {% if similaire.image_principale %}
+                                <img src="{{ url_for('static', filename=similaire.image_principale) }}" 
+                                     class="card-img-top"
+                                     alt="{{ similaire.nom }}"
+                                     style="height: 150px; width: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center h-100">
+                                    <i class="fas fa-image text-muted fa-3x"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body" style="padding: 10px;">
+                            <h6 class="card-title text-truncate mb-1" style="font-size: 0.9rem;">
+                                {{ similaire.nom }}
+                            </h6>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-primary" style="font-size: 0.95rem;">
+                                    {{ "%.2f"|format(similaire.prix) }}$
+                                </span>
+                                <a href="{{ url_for('produit.detail_produit', slug=similaire.slug) }}" 
+                                   class="btn btn-sm btn-outline-primary" style="font-size: 0.7rem; padding: 2px 8px;">
+                                    Voir
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ============================================ -->
+    <!-- TOAST DE NOTIFICATION                        -->
+    <!-- ============================================ -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+        <div id="toastNotification" class="toast align-items-center text-white bg-success border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    <i class="fas fa-check-circle me-2"></i>Produit ajouté au panier !
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* --- Hover card --- */
+.hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.hover-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+}
+.hover-card .card-img-wrapper img {
+    transition: transform 0.5s ease;
+}
+.hover-card:hover .card-img-wrapper img {
+    transform: scale(1.05);
+}
+
+/* --- Quantité --- */
+.btn-qty {
+    width: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-qty:hover {
+    background-color: #e9ecef;
+}
+#qtyInput {
+    width: 50px;
+    padding: 0;
+    text-align: center;
+    border-left: none;
+    border-right: none;
+}
+#qtyInput::-webkit-inner-spin-button,
+#qtyInput::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+#qtyInput {
+    -moz-appearance: textfield;
+}
+
+/* --- Breadcrumb --- */
+.breadcrumb-item a {
+    color: #0d6efd;
+}
+.breadcrumb-item a:hover {
+    text-decoration: underline !important;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .card-img-wrapper {
+        height: 250px !important;
+    }
+    .card-img-wrapper img {
+        height: 250px !important;
+    }
+}
+</style>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ============================================ -->
+    // GESTION DE LA QUANTITÉ
+    // ============================================ -->
+    const qtyInput = document.getElementById('qtyInput');
+    const qtyMinus = document.getElementById('qtyMinus');
+    const qtyPlus = document.getElementById('qtyPlus');
+    const maxStock = parseInt(qtyInput.getAttribute('max')) || 1;
+
+    qtyMinus.addEventListener('click', function() {
+        let value = parseInt(qtyInput.value) || 1;
+        if (value > 1) {
+            qtyInput.value = value - 1;
+        }
+    });
+
+    qtyPlus.addEventListener('click', function() {
+        let value = parseInt(qtyInput.value) || 1;
+        if (value < maxStock) {
+            qtyInput.value = value + 1;
+        }
+    });
+
+    qtyInput.addEventListener('change', function() {
+        let value = parseInt(this.value) || 1;
+        if (value < 1) value = 1;
+        if (value > maxStock) value = maxStock;
+        this.value = value;
+    });
+
+    // ============================================ -->
+    // AJOUT AU PANIER
+    // ============================================ -->
+    const addToCartBtn = document.querySelector('.ajouter-panier');
+    const toast = document.getElementById('toastNotification');
+    const toastMessage = document.getElementById('toastMessage');
+
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', function() {
+            const produitId = this.dataset.produitId;
+            const quantite = parseInt(qtyInput.value) || 1;
+            
+            if (!produitId) {
+                alert('Erreur: produit non identifié');
+                return;
+            }
+            
+            // Animation du bouton
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Ajout en cours...';
+            this.disabled = true;
+            
+            fetch('/api/panier/ajouter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    produit_id: parseInt(produitId), 
+                    quantite: quantite
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour le badge du panier
+                    const badge = document.querySelector('#panier-badge');
+                    if (badge) {
+                        badge.textContent = data.total_articles || 0;
+                        badge.style.display = data.total_articles > 0 ? 'block' : 'none';
+                    }
+                    
+                    // Afficher le toast
+                    toastMessage.innerHTML = '<i class="fas fa-check-circle me-2"></i> ' + data.message;
+                    const bsToast = new bootstrap.Toast(toast);
+                    bsToast.show();
+                    
+                    // Restaurer le bouton
+                    this.innerHTML = '<i class="fas fa-check me-2"></i> Ajouté !';
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-success');
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalHtml;
+                        this.classList.remove('btn-success');
+                        this.classList.add('btn-primary');
+                        this.disabled = false;
+                    }, 2000);
+                } else {
+                    toastMessage.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> ' + data.message;
+                    toast.className = 'toast align-items-center text-white bg-danger border-0';
+                    const bsToast = new bootstrap.Toast(toast);
+                    bsToast.show();
+                    setTimeout(() => {
+                        toast.className = 'toast align-items-center text-white bg-success border-0';
+                    }, 3000);
+                    
+                    this.innerHTML = originalHtml;
+                    this.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                this.innerHTML = originalHtml;
+                this.disabled = false;
+                alert('Une erreur est survenue.');
+            });
+        });
+    }
+
+    // ============================================ -->
+    // BOUTONS FAVORIS
+    // ============================================ -->
+    document.querySelector('.btn-favoris')?.addEventListener('click', function() {
+        const icon = this.querySelector('i');
+        icon.classList.toggle('far');
+        icon.classList.toggle('fas');
+        icon.classList.toggle('text-danger');
+        
+        if (icon.classList.contains('fas')) {
+            this.style.backgroundColor = '#dc3545';
+            this.style.color = 'white';
+        } else {
+            this.style.backgroundColor = '';
+            this.style.color = '';
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

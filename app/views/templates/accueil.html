@@ -1,0 +1,482 @@
+{% extends "base.html" %}
+
+{% block title %}Accueil - MDL Business{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- ============================================ -->
+    <!-- SECTION HERO - CARROUSEL                     -->
+    <!-- ============================================ -->
+    <div class="row align-items-center py-5">
+        <div class="col-lg-6">
+            <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 rounded-pill">
+                <i class="fas fa-store me-1"></i> Boutique en ligne
+            </div>
+            <h1 class="display-4 fw-bold mb-4">
+                Bienvenue sur <br>
+                <span class="text-primary" style="position: relative;">
+                    MDL Business
+                    <span class="position-absolute bottom-0 start-0 w-100 bg-primary" style="height: 4px; opacity: 0.3;"></span>
+                </span>
+            </h1>
+            <p class="lead mb-4 text-muted">
+                Découvrez notre sélection de produits de qualité et profitez d'une expérience d'achat unique.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+                <a href="{{ url_for('produit.liste_produits') }}" class="btn btn-primary btn-lg px-4">
+                    <i class="fas fa-shopping-bag me-2"></i>Voir les produits
+                </a>
+                <a href="{{ url_for('produit.liste_services') }}" class="btn btn-outline-primary btn-lg px-4">
+                    <i class="fas fa-concierge-bell me-2"></i>Nos services
+                </a>
+                <a href="#produits" class="btn btn-outline-secondary btn-lg px-4">
+                    <i class="fas fa-arrow-down me-2"></i>Découvrir
+                </a>
+            </div>
+            <div class="mt-4">
+                <div class="d-flex gap-4">
+                    <div>
+                        <span class="h4 text-primary fw-bold">{{ produits|length or 0 }}</span>
+                        <span class="text-muted ms-1">produits</span>
+                    </div>
+                    <div>
+                        <span class="h4 text-primary fw-bold">100%</span>
+                        <span class="text-muted ms-1">satisfaction</span>
+                    </div>
+                    <div>
+                        <span class="h4 text-primary fw-bold">24/7</span>
+                        <span class="text-muted ms-1">support</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="position-relative">
+                <div class="bg-gradient-primary p-5 rounded-4 text-center text-white" 
+                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 300px;">
+                    <i class="fas fa-store fa-6x mb-3" style="opacity: 0.3;"></i>
+                    <h3 class="fw-bold">Bienvenue dans votre boutique</h3>
+                    <p class="mb-0">Des produits de qualité à prix compétitifs</p>
+                    <div class="mt-3">
+                        <span class="badge bg-white text-dark me-1">⭐ 4.8/5</span>
+                        <span class="badge bg-white text-dark">🔥 Nouveautés</span>
+                    </div>
+                </div>
+                <!-- Carte flottante -->
+                <div class="position-absolute bottom-0 end-0 translate-middle bg-white shadow-lg rounded-3 p-3" style="min-width: 150px;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-shopping-cart text-primary fa-2x"></i>
+                        <div>
+                            <small class="text-muted d-block">Commandes</small>
+                            <span class="fw-bold">+1 200</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SERVICES EN UN CLIN D'ŒIL                    -->
+    <!-- ============================================ -->
+    {% if services %}
+    <div class="py-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="mb-0"><i class="fas fa-concierge-bell text-primary me-2"></i>Nos services</h4>
+                <p class="text-muted small mb-0">Des services professionnels pour répondre à vos besoins</p>
+            </div>
+            <a href="{{ url_for('produit.liste_services') }}" class="btn btn-outline-primary btn-sm">
+                Voir tous <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+            {% for service in services %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 hover-card text-center">
+                        <div class="card-body" style="padding: 16px 12px;">
+                            <div class="service-icon mb-2" style="font-size: 2.5rem; color: #3b82f6;">
+                                <i class="fas fa-{{ service.icone or 'cogs' }}"></i>
+                            </div>
+                            <h6 class="card-title mb-1" style="font-size: 0.9rem; font-weight: 600;">
+                                {{ service.nom }}
+                            </h6>
+                            <p class="card-text text-muted small" style="font-size: 0.75rem; height: 40px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                                {{ service.description|truncate(60) if service.description else 'Service de qualité' }}
+                            </p>
+                            <a href="{{ url_for('produit.detail_service', slug=service.slug) }}" 
+                               class="btn btn-outline-primary btn-sm" style="font-size: 0.7rem; padding: 3px 12px;">
+                                En savoir plus
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ============================================ -->
+    <!-- PRODUITS POPULAIRES                          -->
+    <!-- ============================================ -->
+    {% if produits %}
+    <div id="produits" class="py-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="mb-0"><i class="fas fa-fire text-danger me-2"></i>Produits populaires</h4>
+                <p class="text-muted small mb-0">Les produits les plus appréciés de notre boutique</p>
+            </div>
+            <a href="{{ url_for('produit.liste_produits') }}" class="btn btn-outline-primary btn-sm">
+                Voir tout <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+            {% for produit in produits %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 hover-card">
+                        <!-- Badge promo -->
+                        {% if produit.prix_promo and produit.prix_promo < produit.prix %}
+                            <div class="position-absolute top-0 end-0 m-1 z-1">
+                                <span class="badge bg-danger rounded-pill px-2 py-1" style="font-size: 0.6rem;">
+                                    <i class="fas fa-tag me-1" style="font-size: 0.5rem;"></i>-{{ ((1 - produit.prix_promo/produit.prix) * 100)|round|int }}%
+                                </span>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Image du produit -->
+                        <div class="card-img-wrapper position-relative overflow-hidden" style="height: 150px; background: #f8f9fa;">
+                            {% if produit.image_principale %}
+                                <img src="{{ url_for('static', filename=produit.image_principale) }}" 
+                                     class="card-img-top" 
+                                     alt="{{ produit.nom }}"
+                                     style="height: 150px; width: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center h-100">
+                                    <i class="fas fa-image text-muted fa-3x"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Actions rapides -->
+                            <div class="position-absolute bottom-0 start-0 end-0 p-1" 
+                                 style="background: linear-gradient(transparent, rgba(0,0,0,0.5));">
+                                <div class="d-flex justify-content-end gap-1">
+                                    <button class="btn btn-sm btn-light rounded-circle btn-favoris" 
+                                            style="width: 26px; height: 26px; padding: 0; font-size: 0.65rem;"
+                                            title="Ajouter aux favoris">
+                                        <i class="far fa-heart"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-light rounded-circle btn-ajouter-panier" 
+                                            data-produit-id="{{ produit.id }}"
+                                            style="width: 26px; height: 26px; padding: 0; font-size: 0.65rem;"
+                                            title="Ajouter au panier">
+                                        <i class="fas fa-cart-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body" style="padding: 8px 10px;">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <h6 class="card-title text-truncate mb-0" title="{{ produit.nom }}" style="font-size: 0.85rem; font-weight: 600;">
+                                    {{ produit.nom }}
+                                </h6>
+                                <span class="badge bg-light text-secondary" style="font-size: 0.55rem; padding: 1px 5px;">
+                                    {{ produit.categorie.nom if produit.categorie else 'Général' }}
+                                </span>
+                            </div>
+                            <p class="card-text text-muted small" style="height: 28px; overflow: hidden; font-size: 0.7rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 4px;">
+                                {{ produit.description|truncate(50) if produit.description else 'Aucune description' }}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <div>
+                                    {% if produit.prix_promo and produit.prix_promo < produit.prix %}
+                                        <span class="text-muted text-decoration-line-through small me-1" style="font-size: 0.6rem;">
+                                            {{ "%.2f"|format(produit.prix) }}$
+                                        </span>
+                                        <span class="text-danger fw-bold" style="font-size: 0.9rem;">
+                                            {{ "%.2f"|format(produit.prix_promo) }}$
+                                        </span>
+                                    {% else %}
+                                        <span class="fw-bold text-primary" style="font-size: 0.9rem;">
+                                            {{ "%.2f"|format(produit.prix_actuel) }}$
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <span class="badge" style="font-size: 0.55rem; padding: 2px 5px; background: {% if produit.stock > 10 %}#28a745{% elif produit.stock > 0 %}#ffc107{% else %}#dc3545{% endif %}; color: {% if produit.stock > 10 %}white{% elif produit.stock > 0 %}black{% else %}white{% endif %};">
+                                        {% if produit.stock > 10 %}
+                                            <i class="fas fa-check-circle me-1" style="font-size: 0.4rem;"></i>En stock
+                                        {% elif produit.stock > 0 %}
+                                            <i class="fas fa-exclamation-triangle me-1" style="font-size: 0.4rem;"></i>Stock limité
+                                        {% else %}
+                                            <i class="fas fa-times-circle me-1" style="font-size: 0.4rem;"></i>Rupture
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pb-2" style="padding: 0 10px 6px 10px;">
+                            <a href="{{ url_for('produit.detail_produit', slug=produit.slug) }}"
+                               class="btn btn-outline-primary btn-sm w-100" style="font-size: 0.7rem; padding: 3px 6px;">
+                                <i class="fas fa-eye me-1" style="font-size: 0.6rem;"></i>Voir détails
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ============================================ -->
+    <!-- CATÉGORIES POPULAIRES                       -->
+    <!-- ============================================ -->
+    {% if categories %}
+    <div class="py-4">
+        <h5 class="mb-3"><i class="fas fa-tags text-primary me-2"></i>Nos catégories</h5>
+        <div class="row g-2">
+            {% for categorie in categories[:6] %}
+                <div class="col-md-2 col-4">
+                    <a href="{{ url_for('produit.produits_par_categorie', slug=categorie.slug) }}" 
+                       class="text-decoration-none">
+                        <div class="card border-0 shadow-sm text-center hover-category">
+                            <div class="card-body py-2">
+                                <i class="fas fa-folder-open fa-2x text-primary mb-1"></i>
+                                <h6 class="mb-0 text-truncate" style="font-size: 0.8rem;">{{ categorie.nom }}</h6>
+                                <small class="text-muted" style="font-size: 0.65rem;">{{ categorie.produits|length }} produits</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ============================================ -->
+    <!-- AVANTAGES                                   -->
+    <!-- ============================================ -->
+    <div class="row g-3 py-4">
+        <div class="col-md-3 col-6">
+            <div class="text-center p-2 rounded-3 bg-light h-100">
+                <i class="fas fa-truck fa-2x text-primary mb-1"></i>
+                <h6 class="fw-bold" style="font-size: 0.8rem;">Livraison rapide</h6>
+                <p class="text-muted small mb-0" style="font-size: 0.7rem;">Offerte dès 50$</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-2 rounded-3 bg-light h-100">
+                <i class="fas fa-lock fa-2x text-primary mb-1"></i>
+                <h6 class="fw-bold" style="font-size: 0.8rem;">Paiement sécurisé</h6>
+                <p class="text-muted small mb-0" style="font-size: 0.7rem;">Stripe &amp; PayPal</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-2 rounded-3 bg-light h-100">
+                <i class="fas fa-headset fa-2x text-primary mb-1"></i>
+                <h6 class="fw-bold" style="font-size: 0.8rem;">Support client</h6>
+                <p class="text-muted small mb-0" style="font-size: 0.7rem;">À votre écoute</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="text-center p-2 rounded-3 bg-light h-100">
+                <i class="fas fa-undo fa-2x text-primary mb-1"></i>
+                <h6 class="fw-bold" style="font-size: 0.8rem;">Retours faciles</h6>
+                <p class="text-muted small mb-0" style="font-size: 0.7rem;">30 jours satisfait</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- NEWSLETTER                                  -->
+    <!-- ============================================ -->
+    <div class="row py-4">
+        <div class="col-md-8 mx-auto">
+            <div class="bg-gradient-primary p-4 rounded-4 text-center text-white" 
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h5 class="fw-bold mb-2"><i class="fas fa-envelope me-2"></i>Newsletter</h5>
+                <p class="mb-3" style="font-size: 0.9rem;">Recevez nos offres exclusives et nouveautés directement dans votre boîte mail.</p>
+                <div class="row g-2 justify-content-center">
+                    <div class="col-md-7">
+                        <input type="email" class="form-control form-control-sm" placeholder="Votre email..." style="border-radius: 50px; font-size: 0.85rem;">
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-light btn-sm w-100 text-primary fw-bold" style="border-radius: 50px; font-size: 0.85rem;">
+                            <i class="fas fa-paper-plane me-2"></i>S'abonner
+                        </button>
+                    </div>
+                </div>
+                <small class="d-block mt-2 opacity-75" style="font-size: 0.7rem;">Pas de spam, désabonnement à tout moment.</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT POUR AJOUTER AU PANIER            -->
+<!-- ============================================ -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Boutons "Ajouter au panier" sur la page d'accueil
+    document.querySelectorAll('.btn-ajouter-panier').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const produitId = this.dataset.produitId;
+            
+            if (!produitId) {
+                alert('Erreur: produit non identifié');
+                return;
+            }
+            
+            const icon = this.querySelector('i');
+            icon.className = 'fas fa-spinner fa-spin';
+            this.disabled = true;
+            
+            fetch('/api/panier/ajouter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({produit_id: parseInt(produitId), quantite: 1})
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    // Mettre à jour le badge du panier
+                    const badge = document.querySelector('#panier-badge');
+                    if (badge) {
+                        badge.textContent = data.total_articles || 0;
+                        badge.style.display = data.total_articles > 0 ? 'block' : 'none';
+                    }
+                    
+                    icon.className = 'fas fa-check text-success';
+                    this.disabled = false;
+                    setTimeout(() => {
+                        icon.className = 'fas fa-cart-plus';
+                    }, 2000);
+                } else {
+                    icon.className = 'fas fa-cart-plus';
+                    this.disabled = false;
+                    alert('❌ ' + data.message);
+                }
+            })
+            .catch(function(error) {
+                console.error('Erreur:', error);
+                icon.className = 'fas fa-cart-plus';
+                this.disabled = false;
+                alert('Une erreur est survenue.');
+            });
+        });
+    });
+
+    // Boutons favoris
+    document.querySelectorAll('.btn-favoris').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const icon = this.querySelector('i');
+            icon.classList.toggle('far');
+            icon.classList.toggle('fas');
+            icon.classList.toggle('text-danger');
+        });
+    });
+});
+</script>
+
+<style>
+/* --- Animations et effets --- */
+.hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.hover-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+.hover-card .card-img-wrapper img {
+    transition: transform 0.5s ease;
+}
+.hover-card:hover .card-img-wrapper img {
+    transform: scale(1.05);
+}
+.hover-category {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 8px;
+}
+.hover-category:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* --- Badge promotion --- */
+.badge.bg-danger {
+    font-size: 0.65rem;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* --- Cards --- */
+.card {
+    border-radius: 8px;
+    overflow: hidden;
+}
+.card-img-wrapper {
+    border-radius: 8px 8px 0 0;
+}
+
+/* --- Boutons d'action rapide --- */
+.btn-circle {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    transition: all 0.2s ease;
+}
+.btn-circle:hover {
+    transform: scale(1.1);
+}
+
+/* --- Service icon --- */
+.service-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 50%;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2rem;
+    }
+    .btn-lg {
+        font-size: 0.9rem;
+        padding: 0.6rem 1.2rem;
+    }
+    .card-img-wrapper {
+        height: 130px !important;
+    }
+    .card-img-wrapper img {
+        height: 130px !important;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,518 @@
+{% extends "base.html" %}
+
+{% block title %}Nos produits - MDL Business{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- EN-TÊTE DE LA PAGE                           -->
+    <!-- ============================================ -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h2 class="mb-1">
+                        {% if categorie_active %}
+                            <i class="fas fa-folder-open text-primary me-2"></i>{{ categorie_active.nom }}
+                        {% else %}
+                            <i class="fas fa-boxes text-primary me-2"></i>Tous nos produits
+                        {% endif %}
+                    </h2>
+                    <p class="text-muted small">
+                        <i class="fas fa-box me-1"></i>{{ produits|length }} produit(s) trouvé(s)
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <!-- Vue en grille / liste -->
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-outline-primary active" id="gridView" title="Vue en grille">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" id="listView" title="Vue en liste">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                    <!-- Tri -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-sort me-1"></i>Trier
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="?tri=nom">Par nom</a></li>
+                            <li><a class="dropdown-item" href="?tri=prix">Par prix croissant</a></li>
+                            <li><a class="dropdown-item" href="?tri=-prix">Par prix décroissant</a></li>
+                            <li><a class="dropdown-item" href="?tri=-date">Plus récents</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- ============================================ -->
+        <!-- SIDEBAR - CATÉGORIES                        -->
+        <!-- ============================================ -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-2">
+                    <h5 class="mb-0 small"><i class="fas fa-tags me-2"></i>Catégories</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item {% if not categorie_active %}active{% endif %}" style="padding: 8px 16px;">
+                            <a href="{{ url_for('produit.liste_produits') }}" 
+                               class="text-decoration-none d-flex justify-content-between align-items-center small {% if not categorie_active %}text-white{% endif %}">
+                                <span><i class="fas fa-th-large me-2"></i>Tous les produits</span>
+                                <span class="badge {% if not categorie_active %}bg-light text-primary{% else %}bg-secondary{% endif %} rounded-pill">
+                                    {{ produits|length }}
+                                </span>
+                            </a>
+                        </li>
+                        {% for cat in categories %}
+                            <li class="list-group-item {% if categorie_active and categorie_active.id == cat.id %}active{% endif %}" style="padding: 8px 16px;">
+                                <a href="{{ url_for('produit.produits_par_categorie', slug=cat.slug) }}"
+                                   class="text-decoration-none d-flex justify-content-between align-items-center small {% if categorie_active and categorie_active.id == cat.id %}text-white{% endif %}">
+                                    <span><i class="fas fa-folder me-2"></i>{{ cat.nom }}</span>
+                                    <span class="badge {% if categorie_active and categorie_active.id == cat.id %}bg-light text-primary{% else %}bg-secondary{% endif %} rounded-pill">
+                                        {{ cat.produits|length }}
+                                    </span>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Filtres supplémentaires -->
+            <div class="card shadow-sm border-0 mt-3">
+                <div class="card-header bg-secondary text-white py-2">
+                    <h5 class="mb-0 small"><i class="fas fa-filter me-2"></i>Filtres</h5>
+                </div>
+                <div class="card-body py-2">
+                    <div class="mb-2">
+                        <label class="form-label fw-bold small">Prix</label>
+                        <div class="d-flex gap-2">
+                            <input type="number" class="form-control form-control-sm" placeholder="Min" style="width: 50%; font-size: 0.8rem;">
+                            <input type="number" class="form-control form-control-sm" placeholder="Max" style="width: 50%; font-size: 0.8rem;">
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-bold small">Disponibilité</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enStock" style="width: 0.9rem; height: 0.9rem;">
+                            <label class="form-check-label small" for="enStock">En stock</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enPromo" style="width: 0.9rem; height: 0.9rem;">
+                            <label class="form-check-label small" for="enPromo">En promotion</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm w-100" style="font-size: 0.8rem; padding: 4px 8px;">
+                        <i class="fas fa-search me-1"></i>Appliquer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- LISTE DES PRODUITS                          -->
+        <!-- ============================================ -->
+        <div class="col-lg-9">
+            {% if produits %}
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3" id="productGrid">
+                    {% for produit in produits %}
+                        <div class="col product-item">
+                            <a href="{{ url_for('produit.detail_produit', slug=produit.slug) }}" 
+                               class="text-decoration-none text-reset">
+                                <div class="card h-100 shadow-sm border-0 hover-card">
+                                    <!-- Badge promotion -->
+                                    {% if produit.prix_promo and produit.prix_promo < produit.prix %}
+                                        <div class="position-absolute top-0 start-0 m-2 z-1">
+                                            <span class="badge bg-danger rounded-pill px-2 py-1" style="font-size: 0.65rem;">
+                                                <i class="fas fa-tag me-1" style="font-size: 0.6rem;"></i>-{{ ((1 - produit.prix_promo/produit.prix) * 100)|round|int }}%
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Image du produit -->
+                                    <div class="card-img-wrapper overflow-hidden" style="height: 160px; background: #f8f9fa;">
+                                        {% if produit.image_principale %}
+                                            <img src="{{ url_for('static', filename=produit.image_principale) }}" 
+                                                 class="card-img-top" 
+                                                 alt="{{ produit.nom }}"
+                                                 style="height: 160px; width: 100%; object-fit: cover; transition: transform 0.5s ease;">
+                                        {% else %}
+                                            <div class="d-flex align-items-center justify-content-center h-100">
+                                                <i class="fas fa-image text-muted fa-3x"></i>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <!-- Actions rapides -->
+                                        <div class="position-absolute bottom-0 start-0 end-0 p-2" 
+                                             style="background: linear-gradient(transparent, rgba(0,0,0,0.5));">
+                                            <div class="d-flex justify-content-end gap-1">
+                                                <button class="btn btn-sm btn-light rounded-circle btn-favoris" 
+                                                        data-produit-id="{{ produit.id }}"
+                                                        title="Ajouter aux favoris"
+                                                        style="width: 28px; height: 28px; padding: 0; font-size: 0.7rem;"
+                                                        onclick="event.preventDefault(); event.stopPropagation();">
+                                                    <i class="far fa-heart"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-light rounded-circle btn-ajouter-panier" 
+                                                        data-produit-id="{{ produit.id }}"
+                                                        data-produit-nom="{{ produit.nom }}"
+                                                        title="Ajouter au panier"
+                                                        style="width: 28px; height: 28px; padding: 0; font-size: 0.7rem;"
+                                                        onclick="event.preventDefault(); event.stopPropagation();">
+                                                    <i class="fas fa-cart-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card-body" style="padding: 10px 12px;">
+                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                            <h6 class="card-title text-truncate mb-0" title="{{ produit.nom }}" style="font-size: 0.9rem; font-weight: 600;">
+                                                {{ produit.nom }}
+                                            </h6>
+                                            <span class="badge bg-light text-secondary" style="font-size: 0.6rem; padding: 2px 6px;">
+                                                {{ produit.categorie.nom if produit.categorie else 'Général' }}
+                                            </span>
+                                        </div>
+                                        <p class="card-text text-muted small" style="height: 30px; overflow: hidden; font-size: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 6px;">
+                                            {{ produit.description|truncate(60) if produit.description else 'Aucune description' }}
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                {% if produit.prix_promo and produit.prix_promo < produit.prix %}
+                                                    <span class="text-muted text-decoration-line-through small me-1" style="font-size: 0.7rem;">
+                                                        {{ "%.2f"|format(produit.prix) }}$
+                                                    </span>
+                                                    <span class="text-danger fw-bold" style="font-size: 1rem;">
+                                                        {{ "%.2f"|format(produit.prix_promo) }}$
+                                                    </span>
+                                                {% else %}
+                                                    <span class="fw-bold text-primary" style="font-size: 1rem;">
+                                                        {{ "%.2f"|format(produit.prix) }}$
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                {% if produit.stock > 0 %}
+                                                    <span class="badge bg-success" style="font-size: 0.6rem; padding: 2px 6px;">
+                                                        <i class="fas fa-check-circle me-1" style="font-size: 0.5rem;"></i>En stock
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-danger" style="font-size: 0.6rem; padding: 2px 6px;">
+                                                        <i class="fas fa-times-circle me-1" style="font-size: 0.5rem;"></i>Rupture
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Bouton Voir détails - maintenant plus visible et facile à cliquer -->
+                                    <div class="card-footer bg-transparent border-0 pb-2 pt-0" style="padding: 0 12px 8px 12px;">
+                                        <span class="btn btn-primary btn-sm w-100" style="font-size: 0.8rem; padding: 6px 8px; cursor: pointer;">
+                                            <i class="fas fa-eye me-1" style="font-size: 0.7rem;"></i>Voir détails
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if pagination %}
+                <nav aria-label="Navigation des pages" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                            <a class="page-link" href="{{ pagination.prev_url if pagination.has_prev else '#' }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% for page in pagination.pages %}
+                            <li class="page-item {% if page == pagination.current %}active{% endif %}">
+                                <a class="page-link" href="{{ page.url }}">{{ page.num }}</a>
+                            </li>
+                        {% endfor %}
+                        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                            <a class="page-link" href="{{ pagination.next_url if pagination.has_next else '#' }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-box-open fa-5x text-muted mb-4"></i>
+                    <h4>Aucun produit disponible</h4>
+                    <p class="text-muted">
+                        {% if categorie_active %}
+                            Aucun produit n'est disponible dans cette catégorie pour le moment.
+                        {% else %}
+                            Aucun produit n'est disponible pour le moment.
+                        {% endif %}
+                    </p>
+                    <a href="{{ url_for('produit.liste_produits') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TOAST DE NOTIFICATION                        -->
+<!-- ============================================ -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <div id="toastNotification" class="toast align-items-center text-white bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage">
+                <i class="fas fa-check-circle me-2"></i>Produit ajouté au panier !
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* --- Effets de carte --- */
+.hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.hover-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+.hover-card .card-img-wrapper img {
+    transition: transform 0.5s ease;
+}
+.hover-card:hover .card-img-wrapper img {
+    transform: scale(1.05);
+}
+
+/* --- Sidebar --- */
+.list-group-item {
+    border: none;
+    padding: 8px 16px;
+    transition: background-color 0.2s ease;
+}
+.list-group-item:hover:not(.active) {
+    background-color: #f8f9fa;
+}
+.list-group-item.active {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+.list-group-item a {
+    color: inherit;
+}
+.list-group-item a:hover {
+    text-decoration: none;
+}
+
+/* --- Badge promotion --- */
+.badge.bg-danger {
+    font-size: 0.65rem;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* --- Boutons d'action rapide --- */
+.btn-circle {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    transition: all 0.2s ease;
+}
+.btn-circle:hover {
+    transform: scale(1.1);
+}
+
+/* --- Vue liste --- */
+.grid-view .product-item .card {
+    flex-direction: column;
+}
+.list-view .product-item {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+}
+.list-view .product-item .card {
+    flex-direction: row;
+}
+.list-view .product-item .card-img-wrapper {
+    height: auto !important;
+    width: 150px;
+    min-height: 150px;
+}
+.list-view .product-item .card-body {
+    flex: 1;
+}
+.list-view .product-item .card-footer {
+    border-top: none;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .list-view .product-item .card {
+        flex-direction: column;
+    }
+    .list-view .product-item .card-img-wrapper {
+        width: 100%;
+        height: 160px !important;
+    }
+    .card-img-wrapper {
+        height: 140px !important;
+    }
+    .card-img-wrapper img {
+        height: 140px !important;
+    }
+}
+
+/* --- Carte cliquable --- */
+.product-item .card {
+    cursor: pointer;
+}
+.product-item .card-footer .btn {
+    pointer-events: none;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ============================================ -->
+    // BASCULE VUE GRILLE / LISTE
+    // ============================================ -->
+    const gridBtn = document.getElementById('gridView');
+    const listBtn = document.getElementById('listView');
+    const productGrid = document.getElementById('productGrid');
+    
+    if (gridBtn && listBtn && productGrid) {
+        gridBtn.addEventListener('click', function() {
+            this.classList.add('active');
+            listBtn.classList.remove('active');
+            productGrid.classList.remove('list-view');
+            productGrid.classList.add('grid-view');
+            localStorage.setItem('productView', 'grid');
+        });
+        
+        listBtn.addEventListener('click', function() {
+            this.classList.add('active');
+            gridBtn.classList.remove('active');
+            productGrid.classList.add('list-view');
+            productGrid.classList.remove('grid-view');
+            localStorage.setItem('productView', 'list');
+        });
+        
+        // Restaurer la vue précédente
+        const savedView = localStorage.getItem('productView') || 'grid';
+        if (savedView === 'list') {
+            listBtn.click();
+        }
+    }
+
+    // ============================================ -->
+    // AJOUT AU PANIER (AJAX)
+    // ============================================ -->
+    const cartButtons = document.querySelectorAll('.btn-ajouter-panier');
+    const toast = document.getElementById('toastNotification');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    cartButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const produitId = this.dataset.produitId;
+            const produitNom = this.dataset.produitNom || 'Produit';
+            
+            if (!produitId) {
+                alert('Erreur: produit non identifié');
+                return;
+            }
+            
+            const icon = this.querySelector('i');
+            icon.className = 'fas fa-spinner fa-spin';
+            this.disabled = true;
+            
+            fetch('/api/panier/ajouter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({produit_id: parseInt(produitId), quantite: 1})
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    const badge = document.querySelector('#panier-badge');
+                    if (badge) {
+                        badge.textContent = data.total_articles || 0;
+                        badge.style.display = data.total_articles > 0 ? 'block' : 'none';
+                    }
+                    
+                    toastMessage.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + data.message;
+                    const bsToast = new bootstrap.Toast(toast);
+                    bsToast.show();
+                    
+                    icon.className = 'fas fa-check text-success';
+                    this.disabled = false;
+                    setTimeout(() => {
+                        icon.className = 'fas fa-cart-plus';
+                    }, 2000);
+                } else {
+                    toastMessage.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + data.message;
+                    toast.className = 'toast align-items-center text-white bg-danger border-0';
+                    const bsToast = new bootstrap.Toast(toast);
+                    bsToast.show();
+                    setTimeout(() => {
+                        toast.className = 'toast align-items-center text-white bg-success border-0';
+                    }, 3000);
+                    
+                    icon.className = 'fas fa-cart-plus';
+                    this.disabled = false;
+                }
+            })
+            .catch(function(error) {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue.');
+                icon.className = 'fas fa-cart-plus';
+                btn.disabled = false;
+            });
+        });
+    });
+
+    // ============================================ -->
+    // BOUTONS FAVORIS
+    // ============================================ -->
+    document.querySelectorAll('.btn-favoris').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const icon = this.querySelector('i');
+            icon.classList.toggle('far');
+            icon.classList.toggle('fas');
+            icon.classList.toggle('text-danger');
+        });
+    });
+});
+</script>
+{% endblock %}

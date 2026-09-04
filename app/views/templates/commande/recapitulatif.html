@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Récapitulatif de la commande - MDL Business{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4"><i class="fas fa-clipboard-list me-2"></i>Récapitulatif de la commande</h2>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <!-- Produits -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-box me-2"></i>Vos articles</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in produits %}
+                        <div class="row align-items-center py-2 border-bottom">
+                            <div class="col-6">
+                                <strong>{{ item.produit.nom }}</strong>
+                            </div>
+                            <div class="col-3">
+                                {{ item.quantite }} x {{ item.produit.prix_actuel }} $
+                            </div>
+                            <div class="col-3 text-end">
+                                <strong>{{ item.sous_total }} $</strong>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Formulaire -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Informations de livraison</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('commande.valider_commande') }}" id="formCommande">
+                        <!-- Prénom et Nom -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Prénom <span class="text-danger">*</span></label>
+                                <input type="text" name="prenom" class="form-control" 
+                                       value="{{ current_user.prenom or '' }}" 
+                                       placeholder="Jean"
+                                       required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nom <span class="text-danger">*</span></label>
+                                <input type="text" name="nom" class="form-control" 
+                                       value="{{ current_user.nom or '' }}"
+                                       placeholder="Dupont"
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control" 
+                                   value="{{ current_user.email }}"
+                                   placeholder="votre@email.com"
+                                   required>
+                        </div>
+
+                        <!-- Téléphone WhatsApp -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Téléphone WhatsApp <span class="text-success">(Recommandé)</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fab fa-whatsapp text-success"></i></span>
+                                <input type="tel" name="telephone" class="form-control" 
+                                       placeholder="+243XXXXXXXXX"
+                                       value="{{ current_user.telephone or '' }}">
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Format international : +243 82 901 8462
+                            </small>
+                            <div id="telephoneHelp" class="form-text text-success d-none">
+                                <i class="fas fa-check-circle me-1"></i>
+                                Vous recevrez une confirmation par WhatsApp !
+                            </div>
+                        </div>
+
+                        <!-- Adresse -->
+                        <div class="mb-3">
+                            <label class="form-label">Adresse de livraison <span class="text-danger">*</span></label>
+                            <textarea name="adresse" class="form-control" rows="2" 
+                                      placeholder="Numéro, rue, quartier..." required></textarea>
+                        </div>
+
+                        <!-- Ville, Code postal, Pays -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ville <span class="text-danger">*</span></label>
+                                <input type="text" name="ville" class="form-control" 
+                                       placeholder="Kinshasa" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Code postal <span class="text-danger">*</span></label>
+                                <input type="text" name="code_postal" class="form-control" 
+                                       placeholder="244" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Pays <span class="text-danger">*</span></label>
+                                <input type="text" name="pays" class="form-control" 
+                                       value="République Démocratique du Congo" required>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-3">
+                            <label class="form-label">Notes (optionnel)</label>
+                            <textarea name="notes" class="form-control" rows="2" 
+                                      placeholder="Instructions particulières..."></textarea>
+                        </div>
+
+                        <!-- Bouton de confirmation -->
+                        <button type="submit" class="btn btn-success w-100 mt-3" id="btnConfirmer">
+                            <i class="fas fa-check me-2"></i>Confirmer la commande
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- COLONNE DROITE - RÉSUMÉ                      -->
+        <!-- ============================================ -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Résumé de la commande</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Sous-total</span>
+                        <span>{{ total }}$</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Livraison</span>
+                        {% if frais_livraison == 0 %}
+                            <span class="text-success">Offerte <i class="fas fa-gift ms-1"></i></span>
+                        {% else %}
+                            <span>{{ frais_livraison }}$</span>
+                        {% endif %}
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <h5 class="mb-0">Total</h5>
+                        <h5 class="text-primary mb-0">{{ total_final }}$</h5>
+                    </div>
+
+                    <!-- Informations de livraison -->
+                    <div class="mt-3 pt-3 border-top">
+                        <small class="text-muted">
+                            <i class="fas fa-truck me-1"></i>
+                            Livraison estimée : 3-5 jours ouvrés
+                        </small>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-whatsapp text-success me-1"></i>
+                            Recevez le suivi par WhatsApp
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sécurité -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-lock text-success fa-lg"></i>
+                        <div>
+                            <small class="text-muted">Vos informations sont sécurisées</small><br>
+                            <small class="text-muted">Paiement 100% sécurisé</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WhatsApp Info -->
+            <div class="card shadow-sm mt-3 border-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fab fa-whatsapp fa-2x text-success"></i>
+                        <div>
+                            <small class="fw-bold text-success">Suivi par WhatsApp</small><br>
+                            <small class="text-muted">Recevez des notifications en temps réel</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT                                   -->
+<!-- ============================================ -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ============================================ -->
+    // INDICATEUR WHATSAPP
+    // ============================================ -->
+    const telephoneInput = document.querySelector('input[name="telephone"]');
+    const telephoneHelp = document.getElementById('telephoneHelp');
+    
+    if (telephoneInput) {
+        telephoneInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            if (value.startsWith('+243') && value.length >= 13) {
+                telephoneHelp.classList.remove('d-none');
+            } else {
+                telephoneHelp.classList.add('d-none');
+            }
+        });
+    }
+
+    // ============================================ -->
+    // VALIDATION DU FORMULAIRE
+    // ============================================ -->
+    const form = document.getElementById('formCommande');
+    const btnConfirmer = document.getElementById('btnConfirmer');
+    
+    form.addEventListener('submit', function(e) {
+        btnConfirmer.disabled = true;
+        btnConfirmer.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Traitement...';
+        return true;
+    });
+});
+</script>
+{% endblock %}

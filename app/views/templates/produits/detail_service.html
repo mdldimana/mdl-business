@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}{{ service.nom }} - MDL Business{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- FIL D'ARIANE                                 -->
+    <!-- ============================================ -->
+    <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('accueil') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('produit.liste_services') }}">Services</a></li>
+            <li class="breadcrumb-item active">{{ service.nom }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- ============================================ -->
+        <!-- IMAGE DU SERVICE                             -->
+        <!-- ============================================ -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0 overflow-hidden">
+                <div class="card-img-wrapper" style="height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    {% if service.image_principale %}
+                        <img src="{{ url_for('static', filename=service.image_principale) }}" 
+                             class="w-100 h-100" 
+                             alt="{{ service.nom }}"
+                             style="object-fit: cover;">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center h-100 text-white">
+                            <i class="fas fa-concierge-bell fa-8x opacity-25"></i>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Badges -->
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <span class="badge bg-primary">
+                    <i class="fas fa-star me-1"></i>Service professionnel
+                </span>
+                {% if service.duree %}
+                    <span class="badge bg-info">
+                        <i class="fas fa-clock me-1"></i>{{ service.duree }}
+                    </span>
+                {% endif %}
+                {% if service.livrable %}
+                    <span class="badge bg-success">
+                        <i class="fas fa-check me-1"></i>Livrable à distance
+                    </span>
+                {% else %}
+                    <span class="badge bg-warning">
+                        <i class="fas fa-building me-1"></i>Sur site
+                    </span>
+                {% endif %}
+                {% if service.garantie %}
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-shield-alt me-1"></i>{{ service.garantie }}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- INFORMATIONS DU SERVICE                     -->
+        <!-- ============================================ -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <span class="badge bg-primary bg-opacity-10 text-primary">
+                            {{ service.categorie.nom if service.categorie else 'Service' }}
+                        </span>
+                    </div>
+                    
+                    <h1 class="display-6 fw-bold">{{ service.nom }}</h1>
+                    
+                    <div class="mt-4">
+                        <h6 class="text-muted">Description</h6>
+                        <p class="lead">{{ service.description }}</p>
+                    </div>
+                    
+                    <!-- Prix -->
+                    <div class="mt-4 p-3 bg-light rounded-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted small">Tarif</span>
+                                <div>
+                                    <span class="display-6 fw-bold text-primary">{{ "%.2f"|format(service.prix) }}$</span>
+                                    <span class="text-muted">/ service</span>
+                                </div>
+                            </div>
+                            <div>
+                                {% if service.est_disponible %}
+                                    <span class="badge bg-success px-3 py-2">
+                                        <i class="fas fa-check-circle me-1"></i>Disponible
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger px-3 py-2">
+                                        <i class="fas fa-times-circle me-1"></i>Indisponible
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Caractéristiques -->
+                    {% if service.caracteristiques %}
+                        <div class="mt-4">
+                            <h6 class="text-muted">Caractéristiques</h6>
+                            <ul class="list-unstyled">
+                                {% for item in service.caracteristiques.split(',') %}
+                                    <li><i class="fas fa-check text-success me-2"></i>{{ item.strip() }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Bouton de commande -->
+                    <div class="mt-4">
+                        <div class="d-flex gap-3">
+                            <button class="btn btn-primary btn-lg flex-grow-1 btn-ajouter-panier"
+                                    data-produit-id="{{ service.id }}"
+                                    data-produit-nom="{{ service.nom }}"
+                                    {% if not service.est_disponible %}disabled{% endif %}>
+                                <i class="fas fa-cart-plus me-2"></i>
+                                {% if service.est_disponible %}
+                                    Réserver ce service
+                                {% else %}
+                                    Indisponible
+                                {% endif %}
+                            </button>
+                            <button class="btn btn-outline-secondary btn-lg" title="Partager">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SERVICES SIMILAIRES                          -->
+    <!-- ============================================ -->
+    {% if services_similaires %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="mb-4"><i class="fas fa-layer-group me-2"></i>Services similaires</h3>
+            </div>
+            <div class="row g-4">
+                {% for service_sim in services_similaires %}
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm border-0 hover-card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ service_sim.nom }}</h5>
+                                <p class="card-text text-muted small">{{ service_sim.description|truncate(100) }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold text-primary">{{ "%.2f"|format(service_sim.prix) }}$</span>
+                                    <a href="{{ url_for('produit.detail_service', slug=service_sim.slug) }}"
+                                       class="btn btn-outline-primary btn-sm">
+                                        Voir
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- ============================================ -->
+    <!-- CONTACT                                      -->
+    <!-- ============================================ -->
+    <div class="row mt-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card bg-light border-0">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-headset fa-3x text-primary mb-3"></i>
+                    <h5>Une question sur ce service ?</h5>
+                    <p class="text-muted">Notre équipe est là pour vous répondre</p>
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-envelope me-2"></i>Nous contacter
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TOAST DE NOTIFICATION                        -->
+<!-- ============================================ -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <div id="toastNotification" class="toast align-items-center text-white bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage">
+                <i class="fas fa-check-circle me-2"></i>Service ajouté au panier !
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 12px;
+}
+.hover-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08) !important;
+}
+.card-img-wrapper {
+    border-radius: 12px 12px 0 0;
+    overflow: hidden;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ============================================ -->
+    // AJOUT AU PANIER
+    // ============================================ -->
+    const cartButton = document.querySelector('.btn-ajouter-panier');
+    const toast = document.getElementById('toastNotification');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    if (cartButton) {
+        cartButton.addEventListener('click', function() {
+            const produitId = this.dataset.produitId;
+            const produitNom = this.dataset.produitNom || 'Service';
+            
+            const icon = this.querySelector('i');
+            const originalText = this.innerHTML;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Ajout...';
+            this.disabled = true;
+            
+            fetch('/api/panier/ajouter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({produit_id: parseInt(produitId), quantite: 1})
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    const badge = document.querySelector('#panier-badge');
+                    if (badge) {
+                        badge.textContent = data.total_articles || 0;
+                        badge.style.display = data.total_articles > 0 ? 'block' : 'none';
+                    }
+                    
+                    toastMessage.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + data.message;
+                    const bsToast = new bootstrap.Toast(toast);
+                    bsToast.show();
+                    
+                    cartButton.innerHTML = '<i class="fas fa-check me-2"></i> Ajouté !';
+                    cartButton.classList.remove('btn-primary');
+                    cartButton.classList.add('btn-success');
+                    cartButton.disabled = false;
+                    setTimeout(function() {
+                        cartButton.innerHTML = originalText;
+                        cartButton.classList.remove('btn-success');
+                        cartButton.classList.add('btn-primary');
+                    }, 3000);
+                } else {
+                    toastMessage.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + data.message;
+                    toast.className = 'toast align-items-center text-white bg-danger border-0';
+                    const bsToast = new bootstrap.Toast(toast);
+                    bsToast.show();
+                    setTimeout(function() {
+                        toast.className = 'toast align-items-center text-white bg-success border-0';
+                    }, 3000);
+                    
+                    cartButton.innerHTML = originalText;
+                    cartButton.disabled = false;
+                }
+            })
+            .catch(function(error) {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue.');
+                cartButton.innerHTML = originalText;
+                cartButton.disabled = false;
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

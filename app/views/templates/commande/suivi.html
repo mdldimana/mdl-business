@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Suivi de commande - MDL Business{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- ============================================ -->
+            <!-- EN-TÊTE                                       -->
+            <!-- ============================================ -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-truck text-primary me-2"></i>Suivi de commande</h2>
+                <a href="{{ url_for('commande.historique') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Mes commandes
+                </a>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-primary text-white py-3" 
+                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0;">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <div>
+                            <h4 class="mb-0 fw-bold">
+                                <i class="fas fa-file-invoice me-2"></i>Commande #{{ commande.reference }}
+                            </h4>
+                            <p class="mb-0 opacity-75 small">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                Commandée le {{ commande.date_creation.strftime('%d/%m/%Y à %H:%M') }}
+                            </p>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                                <i class="fas fa-{{ 'check-circle' if commande.statut == 'livree' else 'clock' }} me-1"></i>
+                                {{ commande.statut|replace('_', ' ')|title }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- ============================================ -->
+                    <!-- STATUT ET PROGRESS BAR                      -->
+                    <!-- ============================================ -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h6 class="text-muted small text-uppercase fw-bold mb-3">
+                                <i class="fas fa-chart-line me-1"></i>Progression
+                            </h6>
+                            <div class="position-relative">
+                                <div class="progress mb-3" style="height: 10px; border-radius: 10px; background: #e9ecef;">
+                                    {% set progress = {
+                                        'en_attente': 0,
+                                        'payee': 25,
+                                        'preparation': 50,
+                                        'expediee': 75,
+                                        'livree': 100
+                                    } %}
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                         role="progressbar" 
+                                         style="width: {{ progress.get(commande.statut, 0) }}%; background: linear-gradient(90deg, #667eea, #764ba2);"
+                                         aria-valuenow="{{ progress.get(commande.statut, 0) }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ progress.get(commande.statut, 0) }}%
+                                    </div>
+                                </div>
+                                
+                                <!-- Étapes -->
+                                <div class="d-flex justify-content-between" style="margin-top: -5px;">
+                                    <div class="text-center" style="flex: 1;">
+                                        <div class="step-circle {% if commande.statut in ['payee', 'preparation', 'expediee', 'livree'] %}completed{% endif %}" 
+                                             style="width: 28px; height: 28px; margin: 0 auto;">
+                                            <i class="fas fa-check" style="font-size: 0.6rem;"></i>
+                                        </div>
+                                        <small class="text-muted d-block" style="font-size: 0.6rem;">Confirmée</small>
+                                    </div>
+                                    <div class="text-center" style="flex: 1;">
+                                        <div class="step-circle {% if commande.statut in ['preparation', 'expediee', 'livree'] %}completed{% endif %}"
+                                             style="width: 28px; height: 28px; margin: 0 auto;">
+                                            <i class="fas fa-check" style="font-size: 0.6rem;"></i>
+                                        </div>
+                                        <small class="text-muted d-block" style="font-size: 0.6rem;">Préparation</small>
+                                    </div>
+                                    <div class="text-center" style="flex: 1;">
+                                        <div class="step-circle {% if commande.statut in ['expediee', 'livree'] %}completed{% endif %}"
+                                             style="width: 28px; height: 28px; margin: 0 auto;">
+                                            <i class="fas fa-check" style="font-size: 0.6rem;"></i>
+                                        </div>
+                                        <small class="text-muted d-block" style="font-size: 0.6rem;">Expédiée</small>
+                                    </div>
+                                    <div class="text-center" style="flex: 1;">
+                                        <div class="step-circle {% if commande.statut == 'livree' %}completed{% endif %}"
+                                             style="width: 28px; height: 28px; margin: 0 auto;">
+                                            <i class="fas fa-check" style="font-size: 0.6rem;"></i>
+                                        </div>
+                                        <small class="text-muted d-block" style="font-size: 0.6rem;">Livrée</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- ============================================ -->
+                        <!-- QR CODE                                     -->
+                        <!-- ============================================ -->
+                        <div class="col-md-4 text-center">
+                            <div class="bg-light p-3 rounded-3">
+                                <h6 class="text-muted small text-uppercase fw-bold mb-2">
+                                    <i class="fas fa-qrcode me-1"></i>Suivi rapide
+                                </h6>
+                                {% if commande.qr_code %}
+                                    <img src="{{ url_for('static', filename=commande.qr_code) }}" 
+                                         alt="QR Code" 
+                                         style="width: 120px; height: 120px;"
+                                         class="img-fluid border rounded p-2 bg-white">
+                                    <p class="text-muted small mt-2 mb-0">
+                                        <i class="fas fa-qrcode me-1"></i>Scannez pour suivre
+                                    </p>
+                                {% else %}
+                                    <div class="py-2">
+                                        <i class="fas fa-qrcode fa-4x text-muted mb-2"></i>
+                                        <p class="text-muted small mb-0">QR Code disponible</p>
+                                        <a href="{{ url_for('commande.confirmation', commande_id=commande.id) }}" 
+                                           class="btn btn-sm btn-outline-primary mt-2">
+                                            <i class="fas fa-sync me-1"></i>Générer
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- ============================================ -->
+                    <!-- DÉTAILS DE LA COMMANDE                      -->
+                    <!-- ============================================ -->
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-primary fw-bold mb-3">
+                                        <i class="fas fa-map-marker-alt me-2"></i>Adresse de livraison
+                                    </h6>
+                                    <p class="small mb-0">
+                                        <strong>{{ commande.prenom }} {{ commande.nom }}</strong><br>
+                                        {% if commande.adresse_livraison %}
+                                            {{ commande.adresse_livraison|replace('\n', '<br>')|safe }}<br>
+                                        {% endif %}
+                                        {% if commande.code_postal %}{{ commande.code_postal }} {% endif %}
+                                        {% if commande.ville %}{{ commande.ville }}<br>{% endif %}
+                                        {% if commande.pays %}{{ commande.pays }}<br>{% endif %}
+                                        {% if commande.telephone %}
+                                            <span class="text-muted">
+                                                <i class="fas fa-phone me-1"></i>{{ commande.telephone }}
+                                            </span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-primary fw-bold mb-3">
+                                        <i class="fas fa-box me-2"></i>Récapitulatif
+                                    </h6>
+                                    <ul class="list-unstyled small mb-3">
+                                        {% for ligne in commande.lignes[:3] %}
+                                            <li class="py-1 d-flex justify-content-between border-bottom">
+                                                <span>{{ ligne.quantite }} x {{ ligne.nom_produit }}</span>
+                                                <span class="fw-bold">{{ "%.2f"|format(ligne.prix_unitaire * ligne.quantite) }}$</span>
+                                            </li>
+                                        {% endfor %}
+                                        {% if commande.lignes|length > 3 %}
+                                            <li class="text-muted py-1">
+                                                <i class="fas fa-ellipsis-h me-1"></i>
+                                                et {{ commande.lignes|length - 3 }} autre(s) article(s)
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                    <div class="d-flex justify-content-between fw-bold">
+                                        <span>Total</span>
+                                        <span class="text-primary">{{ "%.2f"|format(commande.total) }}$</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================ -->
+                    <!-- BOUTONS D'ACTION                             -->
+                    <!-- ============================================ -->
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="d-flex justify-content-between flex-wrap gap-2">
+                            <div>
+                                <a href="{{ url_for('commande.historique') }}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-arrow-left me-1"></i>Mes commandes
+                                </a>
+                            </div>
+                            <div class="d-flex gap-2">
+                                {% if commande.statut == 'en_attente' %}
+                                    <button class="btn btn-danger btn-sm" onclick="annulerCommande({{ commande.id }})">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </button>
+                                {% endif %}
+                                <a href="{{ url_for('produit.liste_produits') }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-shopping-bag me-1"></i>Continuer mes achats
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* --- Gradient header --- */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* --- Step circles --- */
+.step-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e9ecef;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.step-circle.completed {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.step-circle .fas {
+    font-size: 0.6rem;
+}
+
+/* --- Progress bar --- */
+.progress {
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    transition: width 0.8s ease;
+}
+
+/* --- Cards --- */
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .step-circle {
+        width: 24px;
+        height: 24px;
+    }
+    .step-circle .fas {
+        font-size: 0.5rem;
+    }
+    .bg-gradient-primary .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.5rem;
+    }
+}
+</style>
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT                                   -->
+<!-- ============================================ -->
+<script>
+function annulerCommande(id) {
+    if (confirm('Voulez-vous vraiment annuler cette commande ?')) {
+        fetch(`/commande/annuler/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Erreur: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue.');
+        });
+    }
+}
+</script>
+{% endblock %}

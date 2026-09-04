@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Nos Services - MDL Business{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- EN-TÊTE                                       -->
+    <!-- ============================================ -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 rounded-pill">
+                <i class="fas fa-concierge-bell me-1"></i> Services professionnels
+            </div>
+            <h1 class="display-4 fw-bold">Nos Services</h1>
+            <p class="lead text-muted">
+                Des services professionnels pour accompagner votre projet
+            </p>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- FILTRE PAR CATÉGORIE                        -->
+    <!-- ============================================ -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <a href="{{ url_for('produit.liste_services') }}" 
+                   class="btn {% if not categorie_active %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                    <i class="fas fa-th-large me-1"></i>Tous
+                </a>
+                {% for cat in categories %}
+                    <a href="{{ url_for('produit.produits_par_categorie', slug=cat.slug) }}?type=service" 
+                       class="btn {% if categorie_active and categorie_active.id == cat.id %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                        <i class="fas fa-folder me-1"></i>{{ cat.nom }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- LISTE DES SERVICES                          -->
+    <!-- ============================================ -->
+    {% if services %}
+        <div class="row g-4">
+            {% for service in services %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-0 hover-card">
+                        <!-- Image -->
+                        <div class="card-img-wrapper overflow-hidden" style="height: 220px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            {% if service.image_principale %}
+                                <img src="{{ url_for('static', filename=service.image_principale) }}" 
+                                     class="card-img-top" 
+                                     alt="{{ service.nom }}"
+                                     style="height: 220px; width: 100%; object-fit: cover; transition: transform 0.5s ease;">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center h-100 text-white">
+                                    <i class="fas fa-concierge-bell fa-5x opacity-25"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Badge Service -->
+                            <div class="position-absolute top-0 start-0 m-3">
+                                <span class="badge bg-primary rounded-pill px-3 py-2">
+                                    <i class="fas fa-star me-1"></i>Service
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title">{{ service.nom }}</h5>
+                                <span class="badge bg-light text-secondary">
+                                    {{ service.categorie.nom if service.categorie else 'Service' }}
+                                </span>
+                            </div>
+                            
+                            <p class="card-text text-muted small" style="height: 60px; overflow: hidden;">
+                                {{ service.description|truncate(120) if service.description else 'Aucune description' }}
+                            </p>
+                            
+                            <!-- Caractéristiques -->
+                            <div class="mb-3">
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% if service.duree %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-clock me-1"></i>{{ service.duree }}
+                                        </span>
+                                    {% endif %}
+                                    {% if service.livrable %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Livrable
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-building me-1"></i>Sur site
+                                        </span>
+                                    {% endif %}
+                                    {% if service.garantie %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-shield-alt me-1"></i>{{ service.garantie }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="fw-bold fs-5 text-primary">
+                                        {{ "%.2f"|format(service.prix) }}$
+                                    </span>
+                                    <small class="text-muted">/ service</small>
+                                </div>
+                                <div>
+                                    {% if service.est_disponible %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Disponible
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle me-1"></i>Indisponible
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pb-3">
+                            <a href="{{ url_for('produit.detail_service', slug=service.slug) }}"
+                               class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-info-circle me-1"></i>En savoir plus
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-concierge-bell fa-5x text-muted mb-4"></i>
+            <h4>Aucun service disponible</h4>
+            <p class="text-muted">Nos services seront bientôt disponibles.</p>
+        </div>
+    {% endif %}
+
+    <!-- ============================================ -->
+    <!-- POURQUOI NOUS CHOISIR                       -->
+    <!-- ============================================ -->
+    <div class="row g-4 mt-5">
+        <div class="col-12">
+            <h3 class="text-center mb-4">Pourquoi choisir nos services ?</h3>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-3">
+                <i class="fas fa-user-tie fa-3x text-primary mb-2"></i>
+                <h6>Experts qualifiés</h6>
+                <p class="text-muted small">Des professionnels expérimentés</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-3">
+                <i class="fas fa-clock fa-3x text-primary mb-2"></i>
+                <h6>Respect des délais</h6>
+                <p class="text-muted small">Livraison dans les temps</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-3">
+                <i class="fas fa-headset fa-3x text-primary mb-2"></i>
+                <h6>Support dédié</h6>
+                <p class="text-muted small">Accompagnement personnalisé</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-3">
+                <i class="fas fa-shield-alt fa-3x text-primary mb-2"></i>
+                <h6>Garantie satisfaction</h6>
+                <p class="text-muted small">Satisfait ou remboursé</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12) !important;
+}
+.hover-card .card-img-wrapper img {
+    transition: transform 0.5s ease;
+}
+.hover-card:hover .card-img-wrapper img {
+    transform: scale(1.05);
+}
+.badge {
+    font-weight: 500;
+}
+</style>
+{% endblock %}

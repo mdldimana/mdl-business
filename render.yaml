@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: mdl-business
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn run:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DB_HOST
+        value: your-db-host
+      - key: DB_USER
+        value: your-db-user
+      - key: DB_PASS
+        value: your-db-password
+      - key: DB_NAME
+        value: ecommerce
+      - key: STRIPE_PUBLIC_KEY
+        value: your-stripe-public-key
+      - key: STRIPE_SECRET_KEY
+        value: your-stripe-secret-key
+      - key: TWILIO_ACCOUNT_SID
+        value: your-twilio-sid
+      - key: TWILIO_AUTH_TOKEN
+        value: your-twilio-token
+      - key: ADMIN_WHATSAPP
+        value: whatsapp:+243XXXXXXXXX

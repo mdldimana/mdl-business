@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}Détail de la commande - MDL Business{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- EN-TÊTE                                       -->
+    <!-- ============================================ -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-file-invoice text-primary me-2"></i>
+                Commande <span class="text-primary">#{{ commande.reference }}</span>
+            </h2>
+            <p class="text-muted small mb-0">
+                <i class="fas fa-calendar-alt me-1"></i>
+                Passée le {{ commande.date_creation.strftime('%d/%m/%Y à %H:%M') }}
+            </p>
+        </div>
+        <div>
+            <span class="badge 
+                {% if commande.statut == 'en_attente' %}bg-warning text-dark
+                {% elif commande.statut == 'payee' %}bg-info
+                {% elif commande.statut == 'preparation' %}bg-primary
+                {% elif commande.statut == 'expediee' %}bg-primary
+                {% elif commande.statut == 'livree' %}bg-success
+                {% elif commande.statut == 'annulee' %}bg-danger
+                {% endif %} fs-6 px-3 py-2 me-2">
+                <i class="fas fa-{% if commande.statut == 'en_attente' %}clock{% elif commande.statut == 'payee' %}credit-card{% elif commande.statut == 'preparation' %}box{% elif commande.statut == 'expediee' %}truck{% elif commande.statut == 'livree' %}home{% elif commande.statut == 'annulee' %}times{% endif %} me-1"></i>
+                {{ commande.statut|replace('_', ' ')|title }}
+            </span>
+            <a href="{{ url_for('commande.historique') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- ============================================ -->
+        <!-- COLONNE GAUCHE - ARTICLES ET SUIVI            -->
+        <!-- ============================================ -->
+        <div class="col-lg-8">
+            <!-- Articles -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white py-2">
+                    <h5 class="mb-0"><i class="fas fa-box me-2"></i>Articles commandés</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Produit</th>
+                                    <th class="text-center">Quantité</th>
+                                    <th class="text-end">Prix unitaire</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ligne in commande.lignes %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                {% if ligne.produit_image %}
+                                                    <img src="{{ url_for('static', filename='uploads/produits/' + ligne.produit_image) }}" 
+                                                         alt="{{ ligne.nom_produit }}"
+                                                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">
+                                                {% else %}
+                                                    <div style="width: 40px; height: 40px; background: #f8f9fa; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="fas fa-box text-muted"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div>
+                                                    <strong>{{ ligne.nom_produit }}</strong>
+                                                    {% if ligne.code_produit %}
+                                                        <br>
+                                                        <small class="text-muted">Réf: {{ ligne.code_produit }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-light text-dark">{{ ligne.quantite }}</span>
+                                        </td>
+                                        <td class="text-end">{{ "%.2f"|format(ligne.prix_unitaire) }}$</td>
+                                        <td class="text-end">
+                                            <strong>{{ "%.2f"|format(ligne.prix_unitaire * ligne.quantite) }}$</strong>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="bg-light">
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Total</td>
+                                    <td class="text-end text-primary fw-bold fs-5">
+                                        {{ "%.2f"|format(commande.total) }}$
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suivi -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-secondary text-white py-2">
+                    <h5 class="mb-0"><i class="fas fa-timeline me-2"></i>Suivi de la commande</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item {% if commande.statut in ['en_attente', 'payee', 'preparation', 'expediee', 'livree'] %}completed{% endif %}">
+                            <div class="timeline-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Commande confirmée</h6>
+                                <p class="text-muted small">{{ commande.date_creation.strftime('%d/%m/%Y à %H:%M') }}</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item {% if commande.statut in ['payee', 'preparation', 'expediee', 'livree'] %}completed{% endif %}">
+                            <div class="timeline-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Paiement validé</h6>
+                                <p class="text-muted small">
+                                    {% if commande.statut in ['payee', 'preparation', 'expediee', 'livree'] %}
+                                        {% if commande.date_paiement %}
+                                            {{ commande.date_paiement.strftime('%d/%m/%Y à %H:%M') }}
+                                        {% else %}
+                                            Confirmé
+                                        {% endif %}
+                                    {% else %}
+                                        En attente de validation
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="timeline-item {% if commande.statut in ['preparation', 'expediee', 'livree'] %}completed{% endif %}">
+                            <div class="timeline-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Préparation</h6>
+                                <p class="text-muted small">
+                                    {% if commande.statut in ['preparation', 'expediee', 'livree'] %}
+                                        En cours
+                                    {% else %}
+                                        En attente
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="timeline-item {% if commande.statut in ['expediee', 'livree'] %}completed{% endif %}">
+                            <div class="timeline-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Expédition</h6>
+                                <p class="text-muted small">
+                                    {% if commande.statut in ['expediee', 'livree'] %}
+                                        {% if commande.date_expedition %}
+                                            {{ commande.date_expedition.strftime('%d/%m/%Y à %H:%M') }}
+                                        {% else %}
+                                            Expédiée
+                                        {% endif %}
+                                    {% else %}
+                                        En attente
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="timeline-item {% if commande.statut == 'livree' %}completed{% endif %}">
+                            <div class="timeline-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Livraison</h6>
+                                <p class="text-muted small">
+                                    {% if commande.statut == 'livree' %}
+                                        {% if commande.date_livraison %}
+                                            {{ commande.date_livraison.strftime('%d/%m/%Y à %H:%M') }}
+                                        {% else %}
+                                            Livrée
+                                        {% endif %}
+                                    {% else %}
+                                        En attente
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- COLONNE DROITE - RÉSUMÉ                      -->
+        <!-- ============================================ -->
+        <div class="col-lg-4">
+            <!-- QR Code -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-info text-white py-2">
+                    <h5 class="mb-0"><i class="fas fa-qrcode me-2"></i>Suivi rapide</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if commande.qr_code %}
+                        <img src="{{ url_for('static', filename=commande.qr_code) }}" 
+                             alt="QR Code de la commande" 
+                             style="width: 150px; height: 150px;"
+                             class="img-fluid mb-2 border rounded p-1">
+                        <p class="text-muted small">
+                            <i class="fas fa-qrcode me-1"></i>
+                            Scannez le QR Code pour suivre votre commande
+                        </p>
+                        <a href="{{ url_for('commande.suivi', reference=commande.reference) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i>Ouvrir le suivi
+                        </a>
+                    {% else %}
+                        <div class="py-3">
+                            <i class="fas fa-qrcode fa-5x text-muted mb-2"></i>
+                            <p class="text-muted small">QR Code en cours de génération...</p>
+                            <a href="{{ url_for('commande.confirmation', commande_id=commande.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-sync me-1"></i>Régénérer
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Résumé -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white py-2">
+                    <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Résumé</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Sous-total</span>
+                        <span>{{ "%.2f"|format(commande.sous_total or commande.total) }}$</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Livraison</span>
+                        <span>{{ "%.2f"|format(commande.frais_livraison or 0) }}$</span>
+                    </div>
+                    {% if commande.reduction and commande.reduction > 0 %}
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span class="text-muted">Réduction</span>
+                            <span>-{{ "%.2f"|format(commande.reduction) }}$</span>
+                        </div>
+                    {% endif %}
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <h5 class="mb-0">Total</h5>
+                        <h5 class="text-primary mb-0">{{ "%.2f"|format(commande.total) }}$</h5>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Statut</span>
+                        <span class="badge 
+                            {% if commande.statut == 'en_attente' %}bg-warning text-dark
+                            {% elif commande.statut == 'payee' %}bg-info
+                            {% elif commande.statut == 'preparation' %}bg-primary
+                            {% elif commande.statut == 'expediee' %}bg-primary
+                            {% elif commande.statut == 'livree' %}bg-success
+                            {% elif commande.statut == 'annulee' %}bg-danger
+                            {% endif %}">
+                            {{ commande.statut|replace('_', ' ')|title }}
+                        </span>
+                    </div>
+                    {% if commande.mode_paiement %}
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Paiement</span>
+                            <span>{{ commande.mode_paiement|title }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TÉLÉCHARGEMENT FACTURE PDF                   -->
+            <!-- ============================================ -->
+            <div class="card shadow-sm border-0 mt-3">
+                <div class="card-body text-center">
+                    <a href="{{ url_for('commande.facture_pdf', commande_id=commande.id) }}" 
+                       class="btn btn-outline-primary w-100" target="_blank">
+                        <i class="fas fa-file-pdf me-2"></i>Télécharger la facture (PDF)
+                    </a>
+                    <small class="text-muted d-block mt-2">
+                        <i class="fas fa-lock me-1"></i>
+                        Document officiel - Format PDF
+                    </small>
+                </div>
+            </div>
+
+            <!-- Livraison -->
+            <div class="card shadow-sm border-0 mt-3">
+                <div class="card-header bg-secondary text-white py-2">
+                    <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Adresse de livraison</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-0">
+                        <strong>{{ commande.prenom }} {{ commande.nom }}</strong><br>
+                        {% if commande.adresse_livraison %}
+                            {{ commande.adresse_livraison|replace('\n', '<br>')|safe }}<br>
+                        {% endif %}
+                        {% if commande.code_postal %}{{ commande.code_postal }} {% endif %}
+                        {% if commande.ville %}{{ commande.ville }}<br>{% endif %}
+                        {% if commande.pays %}{{ commande.pays }}<br>{% endif %}
+                        {% if commande.telephone %}
+                            <span class="text-muted">
+                                <i class="fas fa-phone me-1"></i>{{ commande.telephone }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">Téléphone non renseigné</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* --- Timeline --- */
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+    border-left: 2px solid #e9ecef;
+    padding-left: 20px;
+}
+
+.timeline-item:last-child {
+    border-left: 2px solid transparent;
+}
+
+.timeline-item .timeline-icon {
+    position: absolute;
+    left: -10px;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #e9ecef;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.5rem;
+    color: #6c757d;
+}
+
+.timeline-item.completed .timeline-icon {
+    background: #28a745;
+    color: white;
+}
+
+.timeline-item .timeline-content h6 {
+    margin-bottom: 2px;
+    font-size: 0.9rem;
+}
+
+.timeline-item .timeline-content p {
+    margin-bottom: 0;
+}
+
+.timeline-item.completed .timeline-content h6 {
+    color: #28a745;
+}
+
+/* --- Table --- */
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.8rem;
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 10px 12px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .timeline {
+        padding-left: 20px;
+    }
+    .timeline-item {
+        padding-left: 15px;
+        padding-bottom: 15px;
+    }
+    .table td {
+        padding: 6px 8px;
+        font-size: 0.85rem;
+    }
+}
+</style>
+{% endblock %}

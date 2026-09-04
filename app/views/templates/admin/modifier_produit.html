@@ -1,0 +1,527 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier un produit - Administration{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- EN-TÊTE                                       -->
+    <!-- ============================================ -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-edit me-2"></i>Modifier le produit</h2>
+        <div>
+            <a href="{{ url_for('admin.gestion_produits') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Retour
+            </a>
+            <a href="{{ url_for('admin.tableau_bord') }}" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+            </a>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- FORMULAIRE                                   -->
+    <!-- ============================================ -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-box me-2"></i>
+                        {{ produit.nom }}
+                        <span class="badge bg-light text-dark ms-2">
+                            ID #{{ produit.id }}
+                        </span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <!-- Informations générales -->
+                        <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>Informations générales</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nom" class="form-label fw-bold">
+                                    Nom du produit <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       name="nom" 
+                                       id="nom" 
+                                       class="form-control" 
+                                       value="{{ produit.nom }}" 
+                                       required 
+                                       minlength="3"
+                                       maxlength="100">
+                                <div class="invalid-feedback">Veuillez saisir un nom valide (3-100 caractères).</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="slug" class="form-label fw-bold">
+                                    Slug <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-link"></i></span>
+                                    <input type="text" 
+                                           name="slug" 
+                                           id="slug" 
+                                           class="form-control" 
+                                           value="{{ produit.slug }}" 
+                                           required 
+                                           pattern="[a-z0-9\-]+">
+                                </div>
+                                <div class="invalid-feedback">Slug invalide (uniquement lettres minuscules, chiffres et tirets).</div>
+                                <small class="text-muted">Généré automatiquement depuis le nom si laissé vide.</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-bold">Description</label>
+                            <textarea name="description" 
+                                      id="description" 
+                                      class="form-control" 
+                                      rows="4" 
+                                      placeholder="Description détaillée du produit...">{{ produit.description or '' }}</textarea>
+                            <small class="text-muted">Maximum 1000 caractères.</small>
+                        </div>
+
+                        <hr>
+
+                        <!-- Prix et stock -->
+                        <h6 class="text-primary mb-3"><i class="fas fa-tag me-2"></i>Prix et stock</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="prix" class="form-label fw-bold">
+                                    Prix <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           name="prix" 
+                                           id="prix" 
+                                           class="form-control" 
+                                           step="0.01" 
+                                           min="0" 
+                                           value="{{ produit.prix }}" 
+                                           required>
+                                </div>
+                                <div class="invalid-feedback">Veuillez saisir un prix valide.</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="prix_promo" class="form-label fw-bold">Prix promo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           name="prix_promo" 
+                                           id="prix_promo" 
+                                           class="form-control" 
+                                           step="0.01" 
+                                           min="0" 
+                                           value="{{ produit.prix_promo or '' }}" 
+                                           placeholder="0.00">
+                                </div>
+                                <small class="text-muted">Laisser vide si aucune promotion.</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="stock" class="form-label fw-bold">
+                                    Stock <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" 
+                                       name="stock" 
+                                       id="stock" 
+                                       class="form-control" 
+                                       min="0" 
+                                       value="{{ produit.stock }}" 
+                                       required>
+                                <div class="invalid-feedback">Veuillez saisir une quantité valide.</div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Catégorie et statut -->
+                        <h6 class="text-primary mb-3"><i class="fas fa-folder me-2"></i>Catégorie et statut</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="categorie_id" class="form-label fw-bold">
+                                    Catégorie <span class="text-danger">*</span>
+                                </label>
+                                <select name="categorie_id" id="categorie_id" class="form-select" required>
+                                    <option value="">Sélectionner une catégorie</option>
+                                    {% for categorie in categories %}
+                                        <option value="{{ categorie.id }}" 
+                                                {% if produit.categorie_id == categorie.id %}selected{% endif %}>
+                                            {{ categorie.nom }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Veuillez sélectionner une catégorie.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Statut</label>
+                                <div class="mt-2">
+                                    <div class="form-check form-switch">
+                                        <input type="checkbox" 
+                                               name="est_disponible" 
+                                               id="est_disponible" 
+                                               class="form-check-input" 
+                                               {% if produit.est_disponible %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold" for="est_disponible">
+                                            <i class="fas fa-{% if produit.est_disponible %}check-circle text-success{% else %}times-circle text-danger{% endif %} me-1"></i>
+                                            Disponible
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch mt-2">
+                                        <input type="checkbox" 
+                                               name="en_promotion" 
+                                               id="en_promotion" 
+                                               class="form-check-input"
+                                               {% if produit.en_promotion %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold" for="en_promotion">
+                                            <i class="fas fa-tag text-danger me-1"></i>
+                                            En promotion
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Image du produit -->
+                        <h6 class="text-primary mb-3"><i class="fas fa-image me-2"></i>Image du produit</h6>
+                        <div class="mb-3">
+                            <!-- Image actuelle -->
+                            {% if produit.image %}
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Image actuelle</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="{{ url_for('static', filename='uploads/produits/' + produit.image) }}" 
+                                             alt="{{ produit.nom }}" 
+                                             style="max-height: 150px; max-width: 200px; object-fit: cover;"
+                                             class="img-thumbnail">
+                                        <div>
+                                            <p class="small text-muted mb-1">{{ produit.image }}</p>
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="supprimerImage({{ produit.id }})">
+                                                <i class="fas fa-trash me-1"></i>Supprimer l'image
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                            {% endif %}
+                            
+                            <!-- Nouvelle image -->
+                            <label for="image" class="form-label fw-bold">Nouvelle image (remplace l'image actuelle)</label>
+                            <div class="dropzone" id="dropzone">
+                                <div class="dropzone-content text-center p-4">
+                                    <i class="fas fa-cloud-upload-alt fa-4x text-primary mb-3"></i>
+                                    <p class="mb-2"><strong>Glissez-déposez une image ici</strong></p>
+                                    <p class="text-muted small">ou</p>
+                                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('image').click()">
+                                        <i class="fas fa-folder-open me-2"></i>Parcourir
+                                    </button>
+                                    <input type="file" 
+                                           name="image" 
+                                           id="image" 
+                                           class="d-none" 
+                                           accept="image/jpeg,image/png,image/gif,image/webp">
+                                    <div id="imagePreview" class="mt-3 d-none">
+                                        <img id="previewImg" src="#" alt="Aperçu" class="img-thumbnail" style="max-height: 200px;">
+                                        <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeImage()">
+                                            <i class="fas fa-times me-1"></i>Supprimer
+                                        </button>
+                                    </div>
+                                    <div id="fileInfo" class="mt-2 text-muted small">
+                                        <span id="fileName"></span>
+                                        <span id="fileSize"></span>
+                                    </div>
+                                    <p class="text-muted small mt-2">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Formats acceptés : JPG, PNG, GIF, WEBP • Max 5MB
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Informations système -->
+                        <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>Informations système</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="bg-light p-2 rounded">
+                                    <small class="text-muted d-block">Date de création</small>
+                                    <strong>{{ produit.date_creation.strftime('%d/%m/%Y à %H:%M') if produit.date_creation else '-' }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="bg-light p-2 rounded">
+                                    <small class="text-muted d-block">Dernière modification</small>
+                                    <strong>{{ produit.date_modification.strftime('%d/%m/%Y à %H:%M') if produit.date_modification else '-' }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="bg-light p-2 rounded">
+                                    <small class="text-muted d-block">Statut</small>
+                                    <strong>
+                                        {% if produit.est_disponible %}
+                                            <span class="text-success">Disponible</span>
+                                        {% else %}
+                                            <span class="text-danger">Indisponible</span>
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Boutons d'action -->
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <a href="{{ url_for('admin.gestion_produits') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Annuler
+                                </a>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Enregistrer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Informations supplémentaires -->
+            <div class="card bg-light mt-3">
+                <div class="card-body">
+                    <h6 class="mb-2"><i class="fas fa-info-circle text-primary me-2"></i>À savoir</h6>
+                    <ul class="small text-muted mb-0">
+                        <li>Les champs marqués d'un <span class="text-danger">*</span> sont obligatoires.</li>
+                        <li>Le slug est utilisé pour l'URL du produit (ex: /produit/nom-du-produit).</li>
+                        <li>Le prix promotionnel doit être inférieur au prix normal.</li>
+                        <li>L'image sera automatiquement redimensionnée si nécessaire.</li>
+                        <li>Laisser le champ image vide pour conserver l'image actuelle.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT                                   -->
+<!-- ============================================ -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ============================================ -->
+    // GÉNÉRATION AUTOMATIQUE DU SLUG
+    // ============================================ -->
+    const nomInput = document.getElementById('nom');
+    const slugInput = document.getElementById('slug');
+    let slugGenerated = false;
+    
+    nomInput.addEventListener('input', function() {
+        if (!slugGenerated) {
+            const slug = this.value
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+            slugInput.value = slug;
+        }
+    });
+    
+    slugInput.addEventListener('input', function() {
+        slugGenerated = this.value.length > 0;
+    });
+
+    // ============================================ -->
+    // APERÇU DE L'IMAGE
+    // ============================================ -->
+    const imageInput = document.getElementById('image');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const dropzone = document.getElementById('dropzone');
+
+    imageInput.addEventListener('change', function(e) {
+        const file = this.files[0];
+        if (file) {
+            // Vérifier la taille (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Le fichier est trop volumineux. Taille max: 5MB');
+                this.value = '';
+                return;
+            }
+            
+            // Vérifier le type
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                alert('Format non supporté. Utilisez JPG, PNG, GIF ou WEBP.');
+                this.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                imagePreview.classList.remove('d-none');
+                fileName.textContent = file.name;
+                fileSize.textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
+                dropzone.classList.add('border-success');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // ============================================ -->
+    // DRAG & DROP
+    // ============================================ -->
+    dropzone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('border-primary', 'bg-light');
+    });
+    
+    dropzone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-primary', 'bg-light');
+    });
+    
+    dropzone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-primary', 'bg-light');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            imageInput.files = files;
+            imageInput.dispatchEvent(new Event('change'));
+        }
+    });
+
+    // ============================================ -->
+    // SUPPRIMER L'IMAGE (nouvelle)
+    // ============================================ -->
+    window.removeImage = function() {
+        imageInput.value = '';
+        imagePreview.classList.add('d-none');
+        previewImg.src = '#';
+        fileName.textContent = '';
+        fileSize.textContent = '';
+        dropzone.classList.remove('border-success');
+    };
+
+    // ============================================ -->
+    // SUPPRIMER L'IMAGE (existante)
+    // ============================================ -->
+    window.supprimerImage = function(produitId) {
+        if (confirm('Voulez-vous vraiment supprimer l\'image de ce produit ?')) {
+            fetch(`/admin/produit/${produitId}/supprimer-image`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Erreur lors de la suppression de l\'image.');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue.');
+            });
+        }
+    };
+
+    // ============================================ -->
+    // VALIDATION DU FORMULAIRE
+    // ============================================ -->
+    const form = document.getElementById('formModifierProduit');
+    
+    form.addEventListener('submit', function(event) {
+        // Vérifier que le prix promo est inférieur au prix normal
+        const prix = parseFloat(document.getElementById('prix').value);
+        const prixPromo = parseFloat(document.getElementById('prix_promo').value);
+        
+        if (prixPromo && prixPromo >= prix) {
+            event.preventDefault();
+            alert('Le prix promotionnel doit être inférieur au prix normal.');
+            document.getElementById('prix_promo').focus();
+            return false;
+        }
+        
+        // Vérifier le slug
+        const slug = slugInput.value;
+        if (!/^[a-z0-9\-]+$/.test(slug)) {
+            event.preventDefault();
+            alert('Le slug ne peut contenir que des lettres minuscules, des chiffres et des tirets.');
+            slugInput.focus();
+            return false;
+        }
+    });
+
+    // ============================================ -->
+    // VALIDATION EN TEMPS RÉEL
+    // ============================================ -->
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.dropzone {
+    border: 2px dashed #dee2e6;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.dropzone:hover {
+    border-color: #80bdff;
+    background-color: #f0f7ff;
+}
+
+.dropzone.border-primary {
+    border-color: #0d6efd;
+    background-color: #f0f7ff;
+}
+
+.dropzone.border-success {
+    border-color: #198754;
+    background-color: #f0fff4;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.img-thumbnail {
+    border-radius: 8px;
+}
+
+#imagePreview {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+</style>
+{% endblock %}

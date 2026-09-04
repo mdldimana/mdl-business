@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier une catégorie - Administration{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-tag me-2"></i>Modifier la catégorie</h2>
+        <a href="{{ url_for('admin.gestion_categories') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Nom de la catégorie *</label>
+                    <input type="text" name="nom" class="form-control" value="{{ categorie.nom }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Slug *</label>
+                    <input type="text" name="slug" class="form-control" value="{{ categorie.slug }}" required>
+                    <small class="text-muted">Utilisé dans l'URL. Ex: /categorie/montres</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control" rows="3">{{ categorie.description or '' }}</textarea>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" name="est_active" class="form-check-input" 
+                           {% if categorie.est_active %}checked{% endif %}>
+                    <label class="form-check-label">Catégorie active</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

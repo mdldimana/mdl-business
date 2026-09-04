@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des utilisateurs - Administration{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- EN-TÊTE                                       -->
+    <!-- ============================================ -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-users me-2"></i>Gestion des utilisateurs</h2>
+        <div>
+            <a href="{{ url_for('admin.ajouter_utilisateur') }}" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>Ajouter un utilisateur
+            </a>
+            <a href="{{ url_for('admin.tableau_bord') }}" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-arrow-left me-2"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- STATISTIQUES DES UTILISATEURS                -->
+    <!-- ============================================ -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Total</h6>
+                    <h3 class="text-primary">{{ utilisateurs|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Admins</h6>
+                    <h3 class="text-danger">{{ utilisateurs|selectattr('role', 'equalto', 'admin')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Clients</h6>
+                    <h3 class="text-info">{{ utilisateurs|selectattr('role', 'equalto', 'client')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Actifs</h6>
+                    <h3 class="text-success">{{ utilisateurs|selectattr('est_actif')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- FILTRES ET RECHERCHE                         -->
+    <!-- ============================================ -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('admin.gestion_utilisateurs') }}" class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" name="recherche" placeholder="Rechercher un utilisateur..." value="{{ request.args.get('recherche', '') }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="role">
+                        <option value="">Tous les rôles</option>
+                        <option value="admin" {% if request.args.get('role') == 'admin' %}selected{% endif %}>Admin</option>
+                        <option value="manager" {% if request.args.get('role') == 'manager' %}selected{% endif %}>Manager</option>
+                        <option value="comptable" {% if request.args.get('role') == 'comptable' %}selected{% endif %}>Comptable</option>
+                        <option value="client" {% if request.args.get('role') == 'client' %}selected{% endif %}>Client</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="statut">
+                        <option value="">Tous les statuts</option>
+                        <option value="actif" {% if request.args.get('statut') == 'actif' %}selected{% endif %}>Actif</option>
+                        <option value="inactif" {% if request.args.get('statut') == 'inactif' %}selected{% endif %}>Inactif</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-2"></i>Filtrer
+                    </button>
+                </div>
+                <div class="col-md-1 text-end">
+                    <span class="badge bg-secondary fs-6 p-2">
+                        {{ utilisateurs|length }}
+                    </span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TABLEAU DES UTILISATEURS                     -->
+    <!-- ============================================ -->
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Liste des utilisateurs</h5>
+            <div>
+                <!-- BOUTON EXPORT PDF -->
+                <a href="{{ url_for('admin.export_utilisateurs_pdf') }}{% if request.args.get('role') %}?role={{ request.args.get('role') }}{% endif %}" 
+                   class="btn btn-sm btn-danger me-2" 
+                   title="Exporter en PDF">
+                    <i class="fas fa-file-pdf me-1"></i>PDF
+                </a>
+                <!-- BOUTON EXPORT EXCEL -->
+                <a href="{{ url_for('admin.export_utilisateurs_excel') }}{% if request.args.get('role') %}?role={{ request.args.get('role') }}{% endif %}" 
+                   class="btn btn-sm btn-success me-2" 
+                   title="Exporter en Excel">
+                    <i class="fas fa-file-excel me-1"></i>Excel
+                </a>
+                <span class="badge bg-light text-dark">
+                    {{ utilisateurs|length }} utilisateur(s)
+                </span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Nom complet</th>
+                            <th>Rôle</th>
+                            <th>Inscription</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for utilisateur in utilisateurs %}
+                            <tr>
+                                <td><span class="badge bg-secondary">{{ utilisateur.id }}</span></td>
+                                <td>
+                                    <strong>{{ utilisateur.email }}</strong>
+                                    {% if utilisateur.id == current_user.id %}
+                                        <span class="badge bg-info ms-1">Vous</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ utilisateur.prenom or '' }} {{ utilisateur.nom or '' }}
+                                    {% if not utilisateur.prenom and not utilisateur.nom %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if utilisateur.role == 'admin' %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-crown me-1"></i>Admin
+                                        </span>
+                                    {% elif utilisateur.role == 'manager' %}
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-user-tie me-1"></i>Manager
+                                        </span>
+                                    {% elif utilisateur.role == 'comptable' %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-calculator me-1"></i>Comptable
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-user me-1"></i>Client
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ utilisateur.date_inscription.strftime('%d/%m/%Y') if utilisateur.date_inscription else '-' }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if utilisateur.est_actif %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Actif
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle me-1"></i>Inactif
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        {% if utilisateur.id != current_user.id %}
+                                            <a href="{{ url_for('admin.modifier_utilisateur', user_id=utilisateur.id) }}" 
+                                               class="btn btn-sm btn-outline-primary" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    onclick="supprimerUtilisateur({{ utilisateur.id }}, '{{ utilisateur.prenom or '' }} {{ utilisateur.nom or '' }}')"
+                                                    title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-outline-secondary" disabled title="Vous ne pouvez pas vous modifier vous-même">
+                                                <i class="fas fa-user"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary" disabled title="Vous ne pouvez pas vous supprimer">
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        {% if not utilisateurs %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="fas fa-users fa-3x d-block mb-3"></i>
+                                    <p>Aucun utilisateur trouvé.</p>
+                                    <a href="{{ url_for('admin.ajouter_utilisateur') }}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-plus me-2"></i>Ajouter votre premier utilisateur
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ACTIONS RAPIDES                              -->
+    <!-- ============================================ -->
+    <div class="row g-3 mt-4">
+        <div class="col-md-3">
+            <div class="card bg-light border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-plus fa-2x text-primary mb-2"></i>
+                    <h6>Ajouter un utilisateur</h6>
+                    <a href="{{ url_for('admin.ajouter_utilisateur') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>Nouvel utilisateur
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light border-danger">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                    <h6>Exporter PDF</h6>
+                    <a href="{{ url_for('admin.export_utilisateurs_pdf') }}" 
+                       class="btn btn-danger btn-sm">
+                        <i class="fas fa-file-pdf me-1"></i>PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-excel fa-2x text-success mb-2"></i>
+                    <h6>Exporter Excel</h6>
+                    <a href="{{ url_for('admin.export_utilisateurs_excel') }}" 
+                       class="btn btn-success btn-sm">
+                        <i class="fas fa-file-excel me-1"></i>Excel
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-bar fa-2x text-info mb-2"></i>
+                    <h6>Statistiques</h6>
+                    <a href="{{ url_for('admin.tableau_bord') }}" class="btn btn-info btn-sm text-white">
+                        <i class="fas fa-tachometer-alt me-1"></i>Tableau de bord
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT                                   -->
+<!-- ============================================ -->
+<script>
+function supprimerUtilisateur(id, nom) {
+    if (confirm(`Voulez-vous vraiment supprimer l'utilisateur "${nom}" ?\nCette action est irréversible.`)) {
+        const btn = event.target.closest('button');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+        btn.disabled = true;
+        
+        fetch(`/admin/utilisateur/supprimer/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else if (response.ok) {
+                window.location.reload();
+            } else {
+                throw new Error('Erreur lors de la suppression');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors de la suppression.');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
+    }
+}
+</script>
+
+<style>
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+.badge {
+    font-weight: 500;
+}
+.btn-group .btn {
+    padding: 0.25rem 0.5rem;
+}
+</style>
+{% endblock %}

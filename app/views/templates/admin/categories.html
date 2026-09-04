@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des catégories - Administration{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- EN-TÊTE                                       -->
+    <!-- ============================================ -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-tags me-2"></i>Gestion des catégories</h2>
+        <div>
+            <a href="{{ url_for('admin.ajouter_categorie') }}" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>Ajouter une catégorie
+            </a>
+            <a href="{{ url_for('admin.tableau_bord') }}" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-arrow-left me-2"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- STATISTIQUES DES CATÉGORIES                  -->
+    <!-- ============================================ -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Total</h6>
+                    <h3 class="text-primary">{{ categories|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Actives</h6>
+                    <h3 class="text-success">{{ categories|selectattr('est_active')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Inactives</h6>
+                    <h3 class="text-danger">{{ categories|rejectattr('est_active')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Avec produits</h6>
+                    <h3 class="text-info">
+                        {% set count = 0 %}
+                        {% for cat in categories %}
+                            {% if cat.produits|length > 0 %}
+                                {% set count = count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ count }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- FILTRES ET RECHERCHE                         -->
+    <!-- ============================================ -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('admin.gestion_categories') }}" class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" name="recherche" placeholder="Rechercher une catégorie..." value="{{ request.args.get('recherche', '') }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="statut">
+                        <option value="">Tous les statuts</option>
+                        <option value="actif" {% if request.args.get('statut') == 'actif' %}selected{% endif %}>Actif</option>
+                        <option value="inactif" {% if request.args.get('statut') == 'inactif' %}selected{% endif %}>Inactif</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-2"></i>Filtrer
+                    </button>
+                </div>
+                <div class="col-md-3 text-end">
+                    <span class="badge bg-secondary fs-6 p-2">
+                        <i class="fas fa-list me-2"></i>{{ categories|length }} catégorie(s)
+                    </span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TABLEAU DES CATÉGORIES                       -->
+    <!-- ============================================ -->
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Liste des catégories</h5>
+            <div>
+                <!-- ============================================ -->
+                <!-- BOUTONS EXPORT PDF ET XLSX AJOUTÉS          -->
+                <!-- ============================================ -->
+                <a href="{{ url_for('admin.export_categories_pdf') }}" 
+                   class="btn btn-sm btn-danger me-1" 
+                   title="Exporter en PDF">
+                    <i class="fas fa-file-pdf me-1"></i>PDF
+                </a>
+                <a href="{{ url_for('admin.export_categories_excel') }}" 
+                   class="btn btn-sm btn-success me-1" 
+                   title="Exporter en Excel">
+                    <i class="fas fa-file-excel me-1"></i>XLSX
+                </a>
+                <span class="badge bg-light text-dark">
+                    {{ categories|length }} catégorie(s)
+                </span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Slug</th>
+                            <th>Description</th>
+                            <th>Produits</th>
+                            <th>Statut</th>
+                            <th>Date création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for categorie in categories %}
+                            <tr>
+                                <td><span class="badge bg-secondary">{{ categorie.id }}</span></td>
+                                <td><strong>{{ categorie.nom }}</strong></td>
+                                <td><code class="text-muted">{{ categorie.slug }}</code></td>
+                                <td>
+                                    {% if categorie.description %}
+                                        <span title="{{ categorie.description }}">
+                                            {{ categorie.description|truncate(50) }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ categorie.produits|length }}</span>
+                                </td>
+                                <td>
+                                    {% if categorie.est_active %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Active
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle me-1"></i>Inactive
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ categorie.date_creation.strftime('%d/%m/%Y') if categorie.date_creation else '-' }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin.modifier_categorie', categorie_id=categorie.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% if categorie.est_active %}
+                                            <a href="{{ url_for('admin.modifier_categorie', categorie_id=categorie.id) }}" 
+                                               class="btn btn-sm btn-outline-warning" title="Désactiver">
+                                                <i class="fas fa-pause"></i>
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ url_for('admin.modifier_categorie', categorie_id=categorie.id) }}" 
+                                               class="btn btn-sm btn-outline-success" title="Activer">
+                                                <i class="fas fa-play"></i>
+                                            </a>
+                                        {% endif %}
+                                        {% if categorie.produits|length == 0 %}
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    onclick="supprimerCategorie({{ categorie.id }}, '{{ categorie.nom }}')"
+                                                    title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-outline-secondary" 
+                                                    disabled 
+                                                    title="Impossible de supprimer - {{ categorie.produits|length }} produit(s)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        {% if not categories %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    <i class="fas fa-tags fa-3x d-block mb-3"></i>
+                                    <p>Aucune catégorie trouvée.</p>
+                                    <a href="{{ url_for('admin.ajouter_categorie') }}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-plus me-2"></i>Ajouter votre première catégorie
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ACTIONS RAPIDES                              -->
+    <!-- ============================================ -->
+    <div class="row g-3 mt-4">
+        <div class="col-md-3">
+            <div class="card bg-light border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-plus-circle fa-2x text-primary mb-2"></i>
+                    <h6>Ajouter</h6>
+                    <a href="{{ url_for('admin.ajouter_categorie') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>Nouvelle
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light border-danger">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                    <h6>Exporter PDF</h6>
+                    <a href="{{ url_for('admin.export_categories_pdf') }}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-file-pdf me-1"></i>PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-excel fa-2x text-success mb-2"></i>
+                    <h6>Exporter Excel</h6>
+                    <a href="{{ url_for('admin.export_categories_excel') }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-file-excel me-1"></i>XLSX
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-tachometer-alt fa-2x text-info mb-2"></i>
+                    <h6>Dashboard</h6>
+                    <a href="{{ url_for('admin.tableau_bord') }}" class="btn btn-info btn-sm text-white">
+                        <i class="fas fa-chart-pie me-1"></i>Voir stats
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT                                   -->
+<!-- ============================================ -->
+<script>
+function supprimerCategorie(id, nom) {
+    if (confirm(`Voulez-vous vraiment supprimer la catégorie "${nom}" ?\nCette action est irréversible.`)) {
+        const btn = event.target.closest('button');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+        btn.disabled = true;
+        
+        fetch(`/admin/categorie/supprimer/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else if (response.ok) {
+                window.location.reload();
+            } else {
+                throw new Error('Erreur lors de la suppression');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors de la suppression.');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
+    }
+}
+</script>
+
+<style>
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+.badge {
+    font-weight: 500;
+}
+.btn-group .btn {
+    padding: 0.25rem 0.5rem;
+}
+</style>
+{% endblock %}
