@@ -1,19 +1,18 @@
 from flask import Blueprint, render_template, request, url_for
 from app.models import Produit, Categorie
-import math
+from app.extensions import cache
 
 produit_bp = Blueprint('produit', __name__)
 
-# Nombre de produits par page
 PRODUITS_PAR_PAGE = 12
 
 
 @produit_bp.route('/produits')
+@cache.cached(timeout=300, query_string=True)
 def liste_produits():
     """Affiche la liste de tous les produits avec pagination"""
     page = request.args.get('page', 1, type=int)
 
-    # Récupérer les produits avec pagination
     pagination = Produit.query.filter_by(est_disponible=True) \
         .order_by(Produit.id) \
         .paginate(page=page, per_page=PRODUITS_PAR_PAGE, error_out=False)
@@ -35,6 +34,7 @@ def detail_produit(slug):
 
 
 @produit_bp.route('/categorie/<slug>')
+@cache.cached(timeout=300, query_string=True)
 def produits_par_categorie(slug):
     """Affiche les produits d'une catégorie avec pagination"""
     page = request.args.get('page', 1, type=int)
@@ -73,7 +73,6 @@ def detail_service(slug):
     """Affiche le détail d'un service"""
     service = Produit.query.filter_by(slug=slug, est_service=True, est_disponible=True).first_or_404()
 
-    # Récupérer les services similaires
     services_similaires = Produit.query.filter(
         Produit.est_service == True,
         Produit.id != service.id,

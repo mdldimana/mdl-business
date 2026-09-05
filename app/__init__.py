@@ -2,13 +2,8 @@ from flask import Flask, render_template
 import os
 from dotenv import load_dotenv
 
-from app.extensions import db, migrate, bcrypt, login_manager
+from app.extensions import db, migrate, bcrypt, login_manager, cache
 from app.models import Utilisateur, Categorie, Produit
-
-# Importer Cloudinary
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 
 load_dotenv()
 
@@ -19,10 +14,6 @@ def create_app():
                 static_folder='views/static')
 
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-secret-key'
-
-    # ============================================
-    # BASE DE DONNÉES (POSTGRESQL)
-    # ============================================
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 
     if not app.config['SQLALCHEMY_DATABASE_URI']:
@@ -35,27 +26,26 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # ============================================
-    # CLOUDINARY - CONFIGURATION
+    # REDIS CACHE (Upstash)
     # ============================================
-    cloudinary.config(
-        cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
-        api_key=os.environ.get('CLOUDINARY_API_KEY'),
-        api_secret=os.environ.get('CLOUDINARY_API_SECRET')
-    )
+    app.config['CACHE_TYPE'] = 'RedisCache'
+    app.config['CACHE_REDIS_URL'] = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # 5 minutes
 
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
     login_manager.init_app(app)
+    cache.init_app(app)
 
     @login_manager.user_loader
     def load_user(user_id):
         return Utilisateur.query.get(int(user_id))
 
     @app.route('/')
+    @cache.cached(timeout=300)
     def accueil():
-        # Exclure les services
-        produits_recents = Produit.query.filter_by(est_disponible=True, est_service=False).limit(4).all()
+        produits_recents = Produit.query.filter_by(est_disponible=True).limit(4).all()
         return render_template('accueil.html', produits=produits_recents)
 
     # Enregistrer les blueprints
