@@ -2,7 +2,7 @@ from flask import Flask, render_template
 import os
 from dotenv import load_dotenv
 
-from app.extensions import db, migrate, bcrypt, login_manager, cache, mail  # ← AJOUTER mail
+from app.extensions import db, migrate, bcrypt, login_manager, cache, mail  # ✅ mail importé
 from app.models import Utilisateur, Categorie, Produit
 
 # ============================================
@@ -42,13 +42,13 @@ def create_app():
     )
 
     # ============================================
-    # CACHE DÉSACTIVÉ (PAS DE REDIS)
+    # CACHE
     # ============================================
     app.config['CACHE_TYPE'] = 'NullCache'
     app.config['CACHE_DEFAULT_TIMEOUT'] = 300
 
     # ============================================
-    # CONFIGURATION MAIL (AJOUTER CE BLOC)
+    # CONFIGURATION MAIL
     # ============================================
     app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
@@ -62,7 +62,7 @@ def create_app():
     bcrypt.init_app(app)
     login_manager.init_app(app)
     cache.init_app(app)
-    mail.init_app(app)  # ← AJOUTER CETTE LIGNE
+    mail.init_app(app)  # ✅ Initialisation de mail
 
     @login_manager.user_loader
     def load_user(user_id):
