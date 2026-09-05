@@ -26,11 +26,10 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # ============================================
-    # REDIS CACHE (Upstash)
+    # CACHE DÉSACTIVÉ (PAS DE REDIS)
     # ============================================
-    app.config['CACHE_TYPE'] = 'RedisCache'
-    app.config['CACHE_REDIS_URL'] = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
-    app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # 5 minutes
+    app.config['CACHE_TYPE'] = 'NullCache'  # Désactive complètement le cache
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -43,8 +42,7 @@ def create_app():
         return Utilisateur.query.get(int(user_id))
 
     @app.route('/')
-    @cache.cached(timeout=300)
-    def accueil():
+    def accueil():  # Pas de cache
         produits_recents = Produit.query.filter_by(est_disponible=True).limit(4).all()
         return render_template('accueil.html', produits=produits_recents)
 

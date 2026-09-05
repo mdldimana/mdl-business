@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, url_for
 from app.models import Produit, Categorie
-from app.extensions import cache
 
 produit_bp = Blueprint('produit', __name__)
 
@@ -8,7 +7,6 @@ PRODUITS_PAR_PAGE = 12
 
 
 @produit_bp.route('/produits')
-@cache.cached(timeout=300, query_string=True)
 def liste_produits():
     """Affiche la liste de tous les produits avec pagination"""
     page = request.args.get('page', 1, type=int)
@@ -34,7 +32,6 @@ def detail_produit(slug):
 
 
 @produit_bp.route('/categorie/<slug>')
-@cache.cached(timeout=300, query_string=True)
 def produits_par_categorie(slug):
     """Affiche les produits d'une catégorie avec pagination"""
     page = request.args.get('page', 1, type=int)
