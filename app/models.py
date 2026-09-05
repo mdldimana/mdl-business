@@ -14,6 +14,7 @@ class Utilisateur(db.Model, UserMixin):
     mot_de_passe_hash = db.Column(db.String(128), nullable=False)
     prenom = db.Column(db.String(50))
     nom = db.Column(db.String(50))
+    telephone = db.Column(db.String(20))  # <-- NOUVEAU CHAMP AJOUTÉ
     est_admin = db.Column(db.Boolean, default=False)
     role = db.Column(db.String(20), default='client')  # client, manager, comptable, admin
     est_actif = db.Column(db.Boolean, default=True)
@@ -29,6 +30,7 @@ class Utilisateur(db.Model, UserMixin):
     @property
     def nom_complet(self):
         return f"{self.prenom} {self.nom}".strip() or self.email
+
 
 # ============================================
 # MODÈLE CATÉGORIE
@@ -90,6 +92,7 @@ class Produit(db.Model):
     @property
     def en_stock(self):
         return self.stock > 0
+
 
 # ============================================
 # MODÈLE COMMANDE
