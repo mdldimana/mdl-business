@@ -207,7 +207,7 @@
                 </div>
                 <div class="card-body text-center">
                     {% if commande.qr_code %}
-                        <img src="{{ url_for('static', filename=commande.qr_code) }}" 
+                        <img src="{{ commande.qr_code }}"
                              alt="QR Code de la commande" 
                              style="width: 150px; height: 150px;"
                              class="img-fluid mb-2 border rounded p-1">
