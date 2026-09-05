@@ -250,6 +250,7 @@ def ajouter_utilisateur():
         email = request.form.get('email')
         prenom = request.form.get('prenom')
         nom = request.form.get('nom')
+        telephone = request.form.get('telephone')
         mot_de_passe = request.form.get('mot_de_passe')
         role = request.form.get('role', 'client')
         est_actif = request.form.get('est_actif') == 'on'
@@ -298,6 +299,7 @@ def modifier_utilisateur(user_id):
         utilisateur.prenom = request.form.get('prenom')
         utilisateur.nom = request.form.get('nom')
         utilisateur.email = request.form.get('email')
+        utilisateur.telephone = request.form.get('telephone')
         utilisateur.role = request.form.get('role', 'client')
         utilisateur.est_admin = (utilisateur.role == 'admin')
         utilisateur.est_actif = request.form.get('est_actif') == 'on'
