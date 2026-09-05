@@ -38,7 +38,7 @@
 
     <div class="row g-4">
         <!-- ============================================ -->
-        <!-- COLONNE GAUCHE - ARTICLES ET SUIVI            -->
+        <!-- COLONNE GAUCHE - ARTICLES, CLIENT, SUIVI     -->
         <!-- ============================================ -->
         <div class="col-lg-8">
             <!-- Articles -->
@@ -89,6 +89,66 @@
                                 </tr>
                             </tfoot>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- INFORMATIONS CLIENT + ADRESSE LIVRAISON      -->
+            <!-- ============================================ -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-secondary text-white py-2">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Informations client et livraison</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Colonne gauche - Informations personnelles -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-2"><i class="fas fa-id-card me-1"></i>Informations personnelles</h6>
+                            <div class="mb-2">
+                                <span class="text-muted small d-block">Nom complet</span>
+                                <strong>{{ commande.prenom }} {{ commande.nom }}</strong>
+                            </div>
+                            <div class="mb-2">
+                                <span class="text-muted small d-block">Email</span>
+                                <a href="mailto:{{ commande.email }}" class="text-decoration-none">
+                                    {{ commande.email }}
+                                </a>
+                            </div>
+                            <div>
+                                <span class="text-muted small d-block">Téléphone</span>
+                                {% if commande.telephone %}
+                                    <a href="tel:{{ commande.telephone }}" class="text-decoration-none">
+                                        {{ commande.telephone }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Non renseigné</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Colonne droite - Adresse de livraison -->
+                        <div class="col-md-6">
+                            <h6 class="text-success mb-2"><i class="fas fa-map-marker-alt me-1"></i>Adresse de livraison</h6>
+                            <div class="bg-light p-3 rounded-3">
+                                <p class="small mb-0">
+                                    <strong>{{ commande.prenom }} {{ commande.nom }}</strong><br>
+                                    {% if commande.adresse_livraison %}
+                                        {{ commande.adresse_livraison|replace('\n', '<br>')|safe }}<br>
+                                    {% else %}
+                                       <span class="text-muted">Adresse non renseignée</span><br> 
+                                    {% endif %}
+                                    
+                                   
+                                </p>
+                            </div>
+                            {% if commande.instructions_livraison %}
+                                <div class="mt-2">
+                                    <span class="text-muted small d-block">Instructions de livraison</span>
+                                    <small class="text-muted">{{ commande.instructions_livraison }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -306,30 +366,8 @@
                 </div>
             </div>
 
-            <!-- Livraison -->
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-secondary text-white py-2">
-                    <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Adresse de livraison</h5>
-                </div>
-                <div class="card-body">
-                    <p class="small mb-0">
-                        <strong>{{ commande.prenom }} {{ commande.nom }}</strong><br>
-                        {% if commande.adresse_livraison %}
-                            {{ commande.adresse_livraison|replace('\n', '<br>')|safe }}<br>
-                        {% endif %}
-                        {% if commande.code_postal %}{{ commande.code_postal }} {% endif %}
-                        {% if commande.ville %}{{ commande.ville }}<br>{% endif %}
-                        {% if commande.pays %}{{ commande.pays }}<br>{% endif %}
-                        {% if commande.telephone %}
-                            <span class="text-muted">
-                                <i class="fas fa-phone me-1"></i>{{ commande.telephone }}
-                            </span>
-                        {% else %}
-                            <span class="text-muted">Téléphone non renseigné</span>
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
+            <!-- Livraison - Supprimé car intégré dans la section client -->
+            <!-- Cette carte a été supprimée car l'adresse est maintenant dans la section "Informations client et livraison" -->
         </div>
     </div>
 </div>
