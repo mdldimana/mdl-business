@@ -4,9 +4,7 @@
 
 {% block content %}
 <div class="container py-4">
-    <!-- ============================================ -->
-    <!-- EN-TÊTE                                       -->
-    <!-- ============================================ -->
+    <!-- EN-TÊTE -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="fas fa-check-circle text-success me-2"></i>Commande confirmée</h2>
         <div>
@@ -19,9 +17,7 @@
         </div>
     </div>
 
-    <!-- ============================================ -->
-    <!-- MESSAGE DE CONFIRMATION                      -->
-    <!-- ============================================ -->
+    <!-- MESSAGE DE CONFIRMATION -->
     <div class="alert alert-success shadow-sm mb-4">
         <div class="d-flex align-items-center">
             <i class="fas fa-check-circle fa-3x me-3 text-success"></i>
@@ -38,10 +34,6 @@
                     {% else %}
                         <i class="fas fa-info-circle text-warning me-1"></i>
                         <span class="text-warning">Aucun numéro WhatsApp renseigné.</span>
-                        <a href="{{ url_for('commande.detail', commande_id=commande.id) }}" 
-                           class="text-decoration-none">
-                            Ajouter un numéro
-                        </a>
                     {% endif %}
                     <br>
                     <small class="text-muted">
@@ -54,9 +46,7 @@
     </div>
 
     <div class="row">
-        <!-- ============================================ -->
-        <!-- COLONNE GAUCHE - DÉTAILS                     -->
-        <!-- ============================================ -->
+        <!-- COLONNE GAUCHE - DÉTAILS -->
         <div class="col-lg-8">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-primary text-white">
@@ -78,15 +68,6 @@
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center gap-2">
-                                                {% if ligne.produit_image %}
-                                                    <img src="{{ url_for('static', filename='uploads/produits/' + ligne.produit_image) }}" 
-                                                         alt="{{ ligne.nom_produit }}"
-                                                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
-                                                {% else %}
-                                                    <div style="width: 40px; height: 40px; background: #f8f9fa; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
-                                                        <i class="fas fa-box text-muted"></i>
-                                                    </div>
-                                                {% endif %}
                                                 <strong>{{ ligne.nom_produit }}</strong>
                                             </div>
                                         </td>
@@ -157,9 +138,7 @@
             </div>
         </div>
 
-        <!-- ============================================ -->
-        <!-- COLONNE DROITE - RÉSUMÉ                      -->
-        <!-- ============================================ -->
+        <!-- COLONNE DROITE - RÉSUMÉ -->
         <div class="col-lg-4">
             <!-- QR Code -->
             <div class="card shadow-sm mb-4">
@@ -168,23 +147,22 @@
                 </div>
                 <div class="card-body text-center">
                     {% if commande.qr_code %}
-    <img src="{{ commande.qr_code }}" 
-         alt="QR Code de la commande" 
-         style="width: 150px; height: 150px;"
-         class="img-fluid mb-2 border rounded p-1"
-         onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'py-3\'><i class=\'fas fa-qrcode fa-5x text-muted mb-2\'></i><p class=\'text-muted small\'>QR Code temporairement indisponible</p></div>'">
-    <p class="text-muted small">
-        <i class="fas fa-qrcode me-1"></i>
-        Scannez le QR Code pour suivre votre commande
-    </p>
-    <a href="{{ url_for('commande.suivi', reference=commande.reference) }}" 
-       class="btn btn-sm btn-outline-primary">
-        <i class="fas fa-external-link-alt me-1"></i>Ouvrir le suivi
-    </a>
-{% endif %}
+                        <img src="{{ commande.qr_code }}" 
+                             alt="QR Code de la commande" 
+                             style="width: 150px; height: 150px;"
+                             class="img-fluid mb-2 border rounded p-1">
+                        <p class="text-muted small">
+                            <i class="fas fa-qrcode me-1"></i>
+                            Scannez le QR Code pour suivre votre commande
+                        </p>
+                        <a href="{{ url_for('commande.suivi', reference=commande.reference) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i>Ouvrir le suivi
+                        </a>
+                    {% else %}
                         <div class="py-3">
                             <i class="fas fa-qrcode fa-5x text-muted mb-2"></i>
-                            <p class="text-muted small">QR Code disponible bientôt</p>
+                            <p class="text-muted small">QR Code en cours de génération...</p>
                         </div>
                     {% endif %}
                 </div>
@@ -276,9 +254,7 @@
         </div>
     </div>
 
-    <!-- ============================================ -->
-    <!-- ACTIONS                                     -->
-    <!-- ============================================ -->
+    <!-- ACTIONS -->
     <div class="row mt-4">
         <div class="col-12">
             <div class="card shadow-sm bg-light">
@@ -299,23 +275,20 @@
 </div>
 
 <style>
-/* --- Timeline --- */
+/* Timeline */
 .timeline {
     position: relative;
     padding-left: 30px;
 }
-
 .timeline-item {
     position: relative;
     padding-bottom: 20px;
     border-left: 2px solid #e9ecef;
     padding-left: 20px;
 }
-
 .timeline-item:last-child {
     border-left: 2px solid transparent;
 }
-
 .timeline-item .timeline-icon {
     position: absolute;
     left: -10px;
@@ -330,38 +303,28 @@
     justify-content: center;
     font-size: 0.5rem;
 }
-
 .timeline-item.completed .timeline-icon {
     background: #28a745;
     color: white;
 }
-
 .timeline-item .timeline-content h6 {
     margin-bottom: 2px;
     font-size: 0.9rem;
 }
-
 .timeline-item .timeline-content p {
     margin-bottom: 0;
 }
-
 .timeline-item.completed .timeline-content h6 {
     color: #28a745;
 }
-
-/* --- Table --- */
 .table th {
     border-top: none;
     font-weight: 600;
     color: #495057;
 }
-
-/* --- WhatsApp --- */
 .text-warning {
     color: #ffc107 !important;
 }
-
-/* --- Responsive --- */
 @media (max-width: 768px) {
     .timeline {
         padding-left: 20px;
