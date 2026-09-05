@@ -62,21 +62,11 @@
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center gap-2">
-                                                {% if ligne.produit_image %}
-                                                    <img src="{{ url_for('static', filename='uploads/produits/' + ligne.produit_image) }}" 
-                                                         alt="{{ ligne.nom_produit }}"
-                                                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">
-                                                {% else %}
-                                                    <div style="width: 40px; height: 40px; background: #f8f9fa; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                                                        <i class="fas fa-box text-muted"></i>
-                                                    </div>
-                                                {% endif %}
+                                                <div style="width: 40px; height: 40px; background: #f8f9fa; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="fas fa-box text-muted"></i>
+                                                </div>
                                                 <div>
                                                     <strong>{{ ligne.nom_produit }}</strong>
-                                                    {% if ligne.code_produit %}
-                                                        <br>
-                                                        <small class="text-muted">Réf: {{ ligne.code_produit }}</small>
-                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </td>
@@ -127,11 +117,7 @@
                                 <h6>Paiement validé</h6>
                                 <p class="text-muted small">
                                     {% if commande.statut in ['payee', 'preparation', 'expediee', 'livree'] %}
-                                        {% if commande.date_paiement %}
-                                            {{ commande.date_paiement.strftime('%d/%m/%Y à %H:%M') }}
-                                        {% else %}
-                                            Confirmé
-                                        {% endif %}
+                                        Confirmé
                                     {% else %}
                                         En attente de validation
                                     {% endif %}
@@ -161,11 +147,7 @@
                                 <h6>Expédition</h6>
                                 <p class="text-muted small">
                                     {% if commande.statut in ['expediee', 'livree'] %}
-                                        {% if commande.date_expedition %}
-                                            {{ commande.date_expedition.strftime('%d/%m/%Y à %H:%M') }}
-                                        {% else %}
-                                            Expédiée
-                                        {% endif %}
+                                        Expédiée
                                     {% else %}
                                         En attente
                                     {% endif %}
@@ -180,11 +162,7 @@
                                 <h6>Livraison</h6>
                                 <p class="text-muted small">
                                     {% if commande.statut == 'livree' %}
-                                        {% if commande.date_livraison %}
-                                            {{ commande.date_livraison.strftime('%d/%m/%Y à %H:%M') }}
-                                        {% else %}
-                                            Livrée
-                                        {% endif %}
+                                        Livrée
                                     {% else %}
                                         En attente
                                     {% endif %}
@@ -223,14 +201,54 @@
                         <div class="py-3">
                             <i class="fas fa-qrcode fa-5x text-muted mb-2"></i>
                             <p class="text-muted small">QR Code en cours de génération...</p>
-                            <a href="{{ url_for('commande.confirmation', commande_id=commande.id) }}" 
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-sync me-1"></i>Régénérer
-                            </a>
                         </div>
                     {% endif %}
                 </div>
             </div>
+
+            <!-- ============================================ -->
+            <!-- ADMIN : MODIFICATION DU STATUT              -->
+            <!-- ============================================ -->
+            {% if current_user.est_admin %}
+            <div class="card shadow-sm border-0 mb-4 border-warning">
+                <div class="card-header bg-warning text-dark py-2">
+                    <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Administration</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('commande.modifier_statut_commande', commande_id=commande.id) }}">
+                        <div class="d-flex gap-2">
+                            <select name="statut" class="form-select" style="flex: 1;">
+                                <option value="en_attente" {% if commande.statut == 'en_attente' %}selected{% endif %}>
+                                    En attente
+                                </option>
+                                <option value="payee" {% if commande.statut == 'payee' %}selected{% endif %}>
+                                    Payée
+                                </option>
+                                <option value="preparation" {% if commande.statut == 'preparation' %}selected{% endif %}>
+                                    Préparation
+                                </option>
+                                <option value="expediee" {% if commande.statut == 'expediee' %}selected{% endif %}>
+                                    Expédiée
+                                </option>
+                                <option value="livree" {% if commande.statut == 'livree' %}selected{% endif %}>
+                                    Livrée
+                                </option>
+                                <option value="annulee" {% if commande.statut == 'annulee' %}selected{% endif %}>
+                                    Annulée
+                                </option>
+                            </select>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save me-1"></i>Mettre à jour
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Seul un administrateur peut modifier le statut.
+                        </small>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Résumé -->
             <div class="card shadow-sm border-0 mb-4">
@@ -246,12 +264,6 @@
                         <span class="text-muted">Livraison</span>
                         <span>{{ "%.2f"|format(commande.frais_livraison or 0) }}$</span>
                     </div>
-                    {% if commande.reduction and commande.reduction > 0 %}
-                        <div class="d-flex justify-content-between mb-2 text-success">
-                            <span class="text-muted">Réduction</span>
-                            <span>-{{ "%.2f"|format(commande.reduction) }}$</span>
-                        </div>
-                    {% endif %}
                     <hr>
                     <div class="d-flex justify-content-between">
                         <h5 class="mb-0">Total</h5>
@@ -280,10 +292,8 @@
                 </div>
             </div>
 
-            <!-- ============================================ -->
-            <!-- TÉLÉCHARGEMENT FACTURE PDF                   -->
-            <!-- ============================================ -->
-            <div class="card shadow-sm border-0 mt-3">
+            <!-- TÉLÉCHARGEMENT FACTURE PDF -->
+            <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body text-center">
                     <a href="{{ url_for('commande.facture_pdf', commande_id=commande.id) }}" 
                        class="btn btn-outline-primary w-100" target="_blank">
@@ -297,7 +307,7 @@
             </div>
 
             <!-- Livraison -->
-            <div class="card shadow-sm border-0 mt-3">
+            <div class="card shadow-sm border-0">
                 <div class="card-header bg-secondary text-white py-2">
                     <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Adresse de livraison</h5>
                 </div>

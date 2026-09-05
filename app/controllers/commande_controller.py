@@ -134,8 +134,9 @@ def valider_commande():
     try:
         qr_path = generer_qr_code(commande)
         commande.qr_code = qr_path
+        print(f"✅ QR Code généré pour {commande.reference}")
     except Exception as e:
-        print(f"Erreur génération QR Code: {e}")
+        print(f"❌ Erreur génération QR Code: {e}")
 
     db.session.commit()
 
@@ -211,6 +212,32 @@ def detail(commande_id):
 
     return render_template('commande/detail.html', commande=commande)
 
+
+@commande_bp.route('/commande/modifier-statut/<int:commande_id>', methods=['POST'])
+@login_required
+def modifier_statut_commande(commande_id):
+    """Modifie le statut d'une commande (admin uniquement)"""
+    commande = Commande.query.get_or_404(commande_id)
+
+    # Vérifier que l'utilisateur est admin
+    if not current_user.est_admin:
+        flash('Accès non autorisé.', 'danger')
+        return redirect(url_for('commande.detail', commande_id=commande_id))
+
+    nouveau_statut = request.form.get('statut')
+
+    # Liste des statuts valides
+    statuts_valides = ['en_attente', 'payee', 'preparation', 'expediee', 'livree', 'annulee']
+
+    if nouveau_statut in statuts_valides:
+        commande.statut = nouveau_statut
+        db.session.commit()
+        flash(f'Statut de la commande #{commande.reference} mis à jour : {nouveau_statut.replace("_", " ").title()}',
+              'success')
+    else:
+        flash('Statut invalide.', 'danger')
+
+    return redirect(url_for('commande.detail', commande_id=commande_id))
 
 @commande_bp.route('/commande/facture/<int:commande_id>')
 @login_required
