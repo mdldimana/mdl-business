@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Contactez-nous - MDL Business{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12 text-center mb-5">
+            <h1 class="display-5 fw-bold"><i class="fas fa-envelope text-primary me-2"></i>Contactez-nous</h1>
+            <p class="text-muted lead">
+                N'hésitez pas à nous écrire pour toute demande : produit, service, devis ou partenariat.<br>
+                Notre équipe vous répondra dans les plus brefs délais.
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- ============================================ -->
+        <!-- COLONNE GAUCHE - COORDONNÉES                  -->
+        <!-- ============================================ -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body p-4">
+                    <h4 class="mb-4"><i class="fas fa-address-card text-primary me-2"></i>Nos coordonnées</h4>
+                    
+                    <!-- Adresse -->
+                    <div class="d-flex mb-4">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                                <i class="fas fa-map-marker-alt text-primary fa-lg"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Adresse</h6>
+                            <p class="text-muted mb-0">Av Inzia A1 Matonge Kalamu, Kinshasa, RDC</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Téléphone -->
+                    <div class="d-flex mb-4">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success bg-opacity-10 rounded-circle p-3 me-3">
+                                <i class="fas fa-phone text-success fa-lg"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Téléphone</h6>
+                            <p class="text-muted mb-0">
+                                <a href="tel:+243829018462" class="text-decoration-none">+243 829 018 462</a>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="d-flex mb-4">
+                        <div class="flex-shrink-0">
+                            <div class="bg-info bg-opacity-10 rounded-circle p-3 me-3">
+                                <i class="fas fa-envelope text-info fa-lg"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Email</h6>
+                            <p class="text-muted mb-0">
+                                <a href="mailto:mdlbusiness@gmail.com" class="text-decoration-none">mdlbusiness@gmail.com</a>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Horaires -->
+                    <div class="d-flex mb-4">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning bg-opacity-10 rounded-circle p-3 me-3">
+                                <i class="fas fa-clock text-warning fa-lg"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Horaires d'ouverture</h6>
+                            <p class="text-muted mb-0">
+                                <strong>Lundi - Vendredi</strong><br>
+                                08h00 – 18h00<br>
+                                <strong>Samedi</strong><br>
+                                09h00 – 14h00<br>
+                                <strong class="text-danger">Dimanche</strong>
+                                <span class="text-danger">Fermé</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Suivez-nous -->
+                    <h6 class="fw-bold mb-3"><i class="fas fa-share-alt me-2"></i>Suivez-nous</h6>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="btn btn-outline-primary btn-rounded" title="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-info btn-rounded" title="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-danger btn-rounded" title="YouTube">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-success btn-rounded" title="WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- COLONNE DROITE - FORMULAIRE                   -->
+        <!-- ============================================ -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h4 class="mb-4"><i class="fas fa-paper-plane text-primary me-2"></i>Envoyez-nous un message</h4>
+                    
+                    <form method="POST" action="{{ url_for('contact.envoyer') }}">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Nom complet</label>
+                                <input type="text" name="nom" class="form-control" placeholder="Votre nom..." required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Adresse Email</label>
+                                <input type="email" name="email" class="form-control" placeholder="Votre email..." required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Sujet</label>
+                                <input type="text" name="sujet" class="form-control" placeholder="Sujet du message..." required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Message</label>
+                                <textarea name="message" class="form-control" rows="5" placeholder="Votre message..." required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-paper-plane me-2"></i>Envoyer le message
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- WhatsApp Direct -->
+            <div class="card shadow-sm border-0 mt-3 border-success">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <i class="fab fa-whatsapp fa-2x text-success me-2"></i>
+                            <span class="fw-bold">Contacter via WhatsApp</span>
+                        </div>
+                        <a href="https://wa.me/243829018462?text=Bonjour%20MDL%20Business%2C%20je%20souhaite%20obtenir%20des%20informations..." 
+                           target="_blank" 
+                           class="btn btn-success">
+                            <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MAP                                         -->
+    <!-- ============================================ -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h5 class="mb-3"><i class="fas fa-map-marked-alt text-primary me-2"></i>Notre emplacement</h5>
+                    <div class="bg-light rounded-3 p-5 text-center">
+                        <i class="fas fa-map fa-4x text-primary mb-3"></i>
+                        <p class="text-muted mb-0">
+                            <strong>Av Inzia A1 Matonge Kalamu, Kinshasa, RDC</strong>
+                        </p>
+                        <p class="text-muted small">Carte interactive bientôt disponible</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn-rounded {
+    width: 45px;
+    height: 45px;
+    border-radius: 50% !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-rounded:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+</style>
+{% endblock %}
