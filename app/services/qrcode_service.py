@@ -16,8 +16,14 @@ def generer_qr_code(commande):
     filename = f"commande_{commande.reference}.png"
     filepath = os.path.join(qr_dir, filename)
 
-    # URL de suivi
-    url = url_for('commande.suivi', reference=commande.reference, _external=True)
+    # URL de suivi - Utiliser BASE_URL si disponible
+    base_url = os.environ.get('BASE_URL', '')
+    if base_url:
+        url = f"{base_url}/commande/suivi/{commande.reference}"
+    else:
+        url = url_for('commande.suivi', reference=commande.reference, _external=True)
+
+    print(f"🔗 URL de suivi: {url}")  # Debug
 
     # Génération du QR Code
     qr = qrcode.QRCode(
@@ -33,27 +39,7 @@ def generer_qr_code(commande):
     img = qr.make_image(fill_color="black", back_color="white")
     img.save(filepath)
 
+    print(f"✅ QR Code sauvegardé: {filepath}")  # Debug
+
     # Retourner le chemin relatif
-    return f"images/qrcodes/{filename}"
-
-
-def generer_qr_code_produit(produit):
-    """
-    Génère un QR Code pour un produit
-    """
-    qr_dir = os.path.join('app', 'views', 'static', 'images', 'qrcodes')
-    os.makedirs(qr_dir, exist_ok=True)
-
-    filename = f"produit_{produit.slug}.png"
-    filepath = os.path.join(qr_dir, filename)
-
-    url = url_for('produit.detail_produit', slug=produit.slug, _external=True)
-
-    qr = qrcode.QRCode(version=1, box_size=8, border=4)
-    qr.add_data(url)
-    qr.make(fit=True)
-
-    img = qr.make_image(fill_color="black", back_color="white")
-    img.save(filepath)
-
     return f"images/qrcodes/{filename}"
