@@ -23,4 +23,4 @@ def upgrade():
 
 def downgrade():
     # SUPPRIMER LA COLONNE TELEPHONE
-    op.drop_column('utilisateurs', 'telephone')g
+    op.drop_column('utilisateurs', 'telephone')
