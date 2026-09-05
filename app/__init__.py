@@ -50,6 +50,10 @@ def create_app():
     from app.controllers.auth_controller import auth_bp
     app.register_blueprint(auth_bp)
 
+    from app.controllers.profil_controller import profil_bp
+    app.register_blueprint(profil_bp)
+
+
     from app.controllers.produit_controller import produit_bp
     app.register_blueprint(produit_bp)
 
@@ -69,3 +73,5 @@ def create_app():
     app.register_blueprint(paypal_bp)
 
     return app
+
+

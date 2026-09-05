@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block title %}Mon profil - MDL Business{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- ============================================ -->
+    <!-- EN-TÊTE                                       -->
+    <!-- ============================================ -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-user-circle text-primary me-2"></i>Mon profil</h2>
+            <p class="text-muted small mb-0">Gérez vos informations personnelles et suivez vos commandes</p>
+        </div>
+        <a href="{{ url_for('accueil') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Retour
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- ============================================ -->
+        <!-- COLONNE GAUCHE - INFORMATIONS PERSONNELLES    -->
+        <!-- ============================================ -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-primary text-white py-3" 
+                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>Mes informations</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Avatar -->
+                    <div class="text-center mb-3">
+                        <div class="position-relative d-inline-block">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 100px; height: 100px; font-size: 3rem; border: 3px solid #667eea;">
+                                <i class="fas fa-user text-primary"></i>
+                            </div>
+                            <button class="position-absolute bottom-0 end-0 btn btn-primary btn-sm rounded-circle" 
+                                    style="width: 32px; height: 32px; padding: 0; border: 2px solid white;">
+                                <i class="fas fa-camera" style="font-size: 0.7rem;"></i>
+                            </button>
+                        </div>
+                        <h5 class="mt-3 fw-bold">{{ utilisateur.prenom }} {{ utilisateur.nom }}</h5>
+                        <span class="badge 
+                            {% if utilisateur.role == 'admin' %}bg-danger
+                            {% elif utilisateur.role == 'manager' %}bg-warning text-dark
+                            {% elif utilisateur.role == 'comptable' %}bg-info
+                            {% else %}bg-secondary{% endif %} px-3 py-2">
+                            <i class="fas fa-{% if utilisateur.role == 'admin' %}crown{% elif utilisateur.role == 'manager' %}user-tie{% elif utilisateur.role == 'comptable' %}calculator{% else %}user{% endif %} me-1"></i>
+                            {{ utilisateur.role|title if utilisateur.role else 'Client' }}
+                        </span>
+                    </div>
+
+                    <hr>
+
+                    <!-- Informations -->
+                    <div class="mb-3">
+                        <label class="text-muted small text-uppercase fw-bold d-block">
+                            <i class="fas fa-envelope me-1"></i>Email
+                        </label>
+                        <p class="fw-bold mb-0">{{ utilisateur.email }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small text-uppercase fw-bold d-block">
+                            <i class="fas fa-phone me-1"></i>Téléphone
+                        </label>
+                        <p class="fw-bold mb-0">
+                            {% if utilisateur.telephone %}
+                                {{ utilisateur.telephone }}
+                            {% else %}
+                                <span class="text-muted">Non renseigné</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small text-uppercase fw-bold d-block">
+                            <i class="fas fa-calendar-alt me-1"></i>Membre depuis
+                        </label>
+                        <p class="fw-bold mb-0">{{ utilisateur.date_inscription.strftime('%d/%m/%Y') }}</p>
+                    </div>
+
+                    {% if utilisateur.est_actif %}
+                        <div class="alert alert-success alert-sm py-1 mb-3">
+                            <i class="fas fa-check-circle me-1"></i>
+                            <small>Compte actif</small>
+                        </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <!-- Bouton Modifier -->
+                    <button class="btn btn-primary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#formModifier">
+                        <i class="fas fa-edit me-2"></i>Modifier mes informations
+                    </button>
+
+                    <!-- Formulaire de modification -->
+                    <div class="collapse mt-3" id="formModifier">
+                        <div class="card card-body bg-light border-0">
+                            <form method="POST" action="{{ url_for('profil.modifier') }}">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small">Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white">
+                                            <i class="fas fa-envelope text-primary"></i>
+                                        </span>
+                                        <input type="email" name="email" class="form-control" 
+                                               value="{{ utilisateur.email }}" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small">Téléphone</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white">
+                                            <i class="fas fa-phone text-primary"></i>
+                                        </span>
+                                        <input type="tel" name="telephone" class="form-control" 
+                                               value="{{ utilisateur.telephone or '' }}"
+                                               placeholder="+243XXXXXXXXX">
+                                    </div>
+                                    <small class="text-muted">Format international : +243 82 901 8462</small>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-save me-2"></i>Enregistrer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques rapides -->
+            <div class="card shadow-sm border-0 mt-3">
+                <div class="card-body p-3">
+                    <div class="row text-center g-0">
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h5 class="text-primary mb-0">{{ commandes|length }}</h5>
+                                <small class="text-muted">Commandes</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h5 class="text-success mb-0">
+                                    {{ commandes|selectattr('statut', 'equalto', 'livree')|list|length }}
+                                </h5>
+                                <small class="text-muted">Livrées</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="text-warning mb-0">
+                                {{ commandes|selectattr('statut', 'in', ['en_attente', 'payee', 'expediee'])|list|length }}
+                            </h5>
+                            <small class="text-muted">En cours</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- COLONNE DROITE - MES COMMANDES                -->
+        <!-- ============================================ -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Mes commandes</h5>
+                        <a href="{{ url_for('commande.historique') }}" class="btn btn-light btn-sm">
+                            Voir tout <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if commandes %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Référence</th>
+                                        <th>Date</th>
+                                        <th>Total</th>
+                                        <th>Statut</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for commande in commandes %}
+                                        <tr>
+                                            <td>
+                                                <strong class="text-primary">#{{ commande.reference }}</strong>
+                                            </td>
+                                            <td>
+                                                <span class="d-block">{{ commande.date_creation.strftime('%d/%m/%Y') }}</span>
+                                                <small class="text-muted">{{ commande.date_creation.strftime('%H:%M') }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold">{{ "%.2f"|format(commande.total) }}$</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if commande.statut == 'en_attente' %}bg-warning text-dark
+                                                    {% elif commande.statut == 'payee' %}bg-info
+                                                    {% elif commande.statut == 'expediee' %}bg-primary
+                                                    {% elif commande.statut == 'livree' %}bg-success
+                                                    {% elif commande.statut == 'annulee' %}bg-danger
+                                                    {% endif %}"
+                                                    style="font-size: 0.7rem; padding: 4px 10px;">
+                                                    <i class="fas fa-{% if commande.statut == 'en_attente' %}clock{% elif commande.statut == 'payee' %}credit-card{% elif commande.statut == 'expediee' %}truck{% elif commande.statut == 'livree' %}home{% elif commande.statut == 'annulee' %}times{% endif %} me-1"></i>
+                                                    {{ commande.statut|replace('_', ' ')|title }}
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="{{ url_for('commande.detail', commande_id=commande.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye me-1"></i>Détails
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <div class="bg-light rounded-circle d-inline-flex p-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-shopping-bag fa-3x text-muted m-auto"></i>
+                                </div>
+                            </div>
+                            <h6 class="fw-bold">Aucune commande</h6>
+                            <p class="text-muted small">Vous n'avez pas encore passé de commande.</p>
+                            <a href="{{ url_for('produit.liste_produits') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-shopping-bag me-2"></i>Découvrir nos produits
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="row g-2 mt-3">
+                <div class="col-6">
+                    <a href="{{ url_for('commande.historique') }}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-list me-1"></i>Voir toutes mes commandes
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ url_for('produit.liste_produits') }}" class="btn btn-primary w-100">
+                        <i class="fas fa-shopping-bag me-1"></i>Nouvelle commande
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* --- Gradient --- */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* --- Card --- */
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* --- Table --- */
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 12px 16px;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* --- Avatar --- */
+.avatar-container {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar-edit-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+/* --- Input group --- */
+.input-group-text {
+    border-radius: 10px 0 0 10px;
+    border: 1px solid #e2e8f0;
+    border-right: none;
+}
+
+.input-group .form-control {
+    border-radius: 0 10px 10px 0;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .col-lg-4, .col-lg-8 {
+        margin-bottom: 0;
+    }
+    .table td {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+    .table th {
+        font-size: 0.65rem;
+    }
+}
+</style>
+{% endblock %}

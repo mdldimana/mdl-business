@@ -295,40 +295,47 @@
 
                     <!-- Utilisateur -->
                     {% if current_user.is_authenticated %}
-                        <li class="nav-item">
-                            <div class="user-menu">
-                                <div class="user-avatar">
-                                    {{ (current_user.prenom or current_user.email)[0]|upper }}
-                                </div>
-                                <span class="user-name">
-                                    {{ current_user.prenom or current_user.email }}
-                                    {% if current_user.est_admin %}
-                                        <span class="badge bg-warning text-dark ms-1" style="font-size: 0.55rem; padding: 0.15rem 0.5rem;">Admin</span>
-                                    {% endif %}
-                                </span>
-                            </div>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.deconnexion') }}" style="color: rgba(255,255,255,0.5) !important;">
-                                <i class="fas fa-sign-out-alt me-1"></i>
-                                <span class="d-none d-lg-inline">Déconnexion</span>
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.connexion') }}">
-                                <i class="fas fa-sign-in-alt me-1"></i>Connexion
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn btn-primary btn-sm text-white px-3" 
-                               href="{{ url_for('auth.inscription') }}" 
-                               style="background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; border-radius: 50px; padding: 0.4rem 1.2rem;">
-                                <i class="fas fa-user-plus me-1"></i>Inscription
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user me-1"></i>
+            {{ current_user.prenom or current_user.email }}
+            {% if current_user.est_admin %}
+                <span class="badge bg-warning text-dark ms-1">Admin</span>
+            {% endif %}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+                <a class="dropdown-item" href="{{ url_for('profil.index') }}">
+                    <i class="fas fa-id-card me-2"></i>Mon profil
+                </a>
+            </li>
+            {% if current_user.est_admin %}
+                <li>
+                    <a class="dropdown-item" href="{{ url_for('admin.tableau_bord') }}">
+                        <i class="fas fa-tachometer-alt me-2"></i>Administration
+                    </a>
+                </li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item text-danger" href="{{ url_for('auth.deconnexion') }}">
+                    <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                </a>
+            </li>
+        </ul>
+    </li>
+{% else %}
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('auth.connexion') }}">
+            <i class="fas fa-sign-in-alt me-1"></i>Connexion
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('auth.inscription') }}">
+            <i class="fas fa-user-plus me-1"></i>Inscription
+        </a>
+    </li>
+{% endif %}                </ul>
             </div>
         </div>
     </nav>
