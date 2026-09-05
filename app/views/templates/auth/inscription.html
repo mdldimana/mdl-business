@@ -3,99 +3,384 @@
 {% block title %}Inscription - MDL Business{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-body p-5">
-                    <h3 class="text-center mb-4">
-                        <i class="fas fa-user-plus text-primary me-2"></i>
-                        Inscription
-                    </h3>
-                    
-                    <form method="POST" action="{{ url_for('auth.inscription') }}">
+        <div class="col-md-8 col-lg-6">
+            <!-- ============================================ -->
+            <!-- CARTE D'INSCRIPTION                          -->
+            <!-- ============================================ -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-primary text-white text-center py-4" 
+                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0;">
+                    <i class="fas fa-user-plus fa-3x mb-2" style="opacity: 0.8;"></i>
+                    <h3 class="mb-0 fw-bold">Créer un compte</h3>
+                    <p class="mb-0 opacity-75 small">Rejoignez la communauté MDL Business</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- ============================================ -->
+                    <!-- AVANTAGES DE L'INSCRIPTION                   -->
+                    <!-- ============================================ -->
+                    <div class="row g-2 mb-4">
+                        <div class="col-4">
+                            <div class="text-center p-2 rounded bg-light">
+                                <i class="fas fa-gift text-primary"></i>
+                                <small class="d-block text-muted" style="font-size: 0.65rem;">Offres exclusives</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center p-2 rounded bg-light">
+                                <i class="fas fa-truck text-primary"></i>
+                                <small class="d-block text-muted" style="font-size: 0.65rem;">Suivi commande</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center p-2 rounded bg-light">
+                                <i class="fas fa-star text-primary"></i>
+                                <small class="d-block text-muted" style="font-size: 0.65rem;">Programme fidélité</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('auth.inscription') }}" novalidate>
                         {{ form.csrf_token }}
                         
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="prenom" class="form-label">Prénom *</label>
-                                {{ form.prenom(class="form-control", placeholder="Jean") }}
+                        <!-- ============================================ -->
+                        <!-- NOM ET PRÉNOM                               -->
+                        <!-- ============================================ -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="prenom" class="form-label fw-bold small text-uppercase text-muted">
+                                    <i class="fas fa-user me-1"></i>Prénom *
+                                </label>
+                                {{ form.prenom(class="form-control form-control-lg", placeholder="Jean") }}
                                 {% if form.prenom.errors %}
-                                    <div class="text-danger small">
+                                    <div class="text-danger small mt-1">
                                         {% for error in form.prenom.errors %}
-                                            {{ error }}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
                                         {% endfor %}
                                     </div>
                                 {% endif %}
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="nom" class="form-label">Nom *</label>
-                                {{ form.nom(class="form-control", placeholder="Dupont") }}
+                            <div class="col-md-6">
+                                <label for="nom" class="form-label fw-bold small text-uppercase text-muted">
+                                    <i class="fas fa-user me-1"></i>Nom *
+                                </label>
+                                {{ form.nom(class="form-control form-control-lg", placeholder="Dupont") }}
                                 {% if form.nom.errors %}
-                                    <div class="text-danger small">
+                                    <div class="text-danger small mt-1">
                                         {% for error in form.nom.errors %}
-                                            {{ error }}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
                                         {% endfor %}
                                     </div>
                                 {% endif %}
                             </div>
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email *</label>
-                            {{ form.email(class="form-control", placeholder="votre@email.com") }}
+
+                        <!-- ============================================ -->
+                        <!-- EMAIL                                        -->
+                        <!-- ============================================ -->
+                        <div class="mb-3 mt-3">
+                            <label for="email" class="form-label fw-bold small text-uppercase text-muted">
+                                <i class="fas fa-envelope me-1"></i>Email *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-envelope text-primary"></i>
+                                </span>
+                                {{ form.email(class="form-control form-control-lg", placeholder="votre@email.com") }}
+                            </div>
                             {% if form.email.errors %}
-                                <div class="text-danger small">
+                                <div class="text-danger small mt-1">
                                     {% for error in form.email.errors %}
-                                        {{ error }}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
                                     {% endfor %}
                                 </div>
                             {% endif %}
                         </div>
-                        
+
+                        <!-- ============================================ -->
+                        <!-- TÉLÉPHONE                                    -->
+                        <!-- ============================================ -->
                         <div class="mb-3">
-                            <label for="mot_de_passe" class="form-label">Mot de passe *</label>
-                            {{ form.mot_de_passe(class="form-control", placeholder="•••••••• (min 6 caractères)") }}
-                            <small class="text-muted">Minimum 6 caractères</small>
+                            <label for="telephone" class="form-label fw-bold small text-uppercase text-muted">
+                                <i class="fas fa-phone me-1"></i>Téléphone <span class="text-muted">(optionnel)</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-phone text-primary"></i>
+                                </span>
+                                {{ form.telephone(class="form-control form-control-lg", placeholder="+243XXXXXXXXX") }}
+                            </div>
+                            <small class="text-muted">Format: +243 999 999 999</small>
+                            {% if form.telephone.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.telephone.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ============================================ -->
+                        <!-- MOT DE PASSE                                 -->
+                        <!-- ============================================ -->
+                        <div class="mb-3">
+                            <label for="mot_de_passe" class="form-label fw-bold small text-uppercase text-muted">
+                                <i class="fas fa-lock me-1"></i>Mot de passe *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-lock text-primary"></i>
+                                </span>
+                                {{ form.mot_de_passe(class="form-control form-control-lg", placeholder="•••••••• (min 6 caractères)", id="password") }}
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword" title="Afficher/Masquer">
+                                    <i class="fas fa-eye" id="passwordIcon"></i>
+                                </button>
+                            </div>
+                            <div class="mt-2">
+                                <div class="progress" style="height: 4px;">
+                                    <div id="passwordStrength" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                                </div>
+                                <small id="passwordHelp" class="text-muted">Minimum 6 caractères</small>
+                            </div>
                             {% if form.mot_de_passe.errors %}
-                                <div class="text-danger small">
+                                <div class="text-danger small mt-1">
                                     {% for error in form.mot_de_passe.errors %}
-                                        {{ error }}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
                                     {% endfor %}
                                 </div>
                             {% endif %}
                         </div>
-                        
+
+                        <!-- ============================================ -->
+                        <!-- CONFIRMATION MOT DE PASSE                    -->
+                        <!-- ============================================ -->
                         <div class="mb-3">
-                            <label for="mot_de_passe_confirm" class="form-label">Confirmer le mot de passe *</label>
-                            {{ form.mot_de_passe_confirm(class="form-control", placeholder="••••••••") }}
+                            <label for="mot_de_passe_confirm" class="form-label fw-bold small text-uppercase text-muted">
+                                <i class="fas fa-check-circle me-1"></i>Confirmer le mot de passe *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-check-circle text-primary"></i>
+                                </span>
+                                {{ form.mot_de_passe_confirm(class="form-control form-control-lg", placeholder="••••••••") }}
+                            </div>
                             {% if form.mot_de_passe_confirm.errors %}
-                                <div class="text-danger small">
+                                <div class="text-danger small mt-1">
                                     {% for error in form.mot_de_passe_confirm.errors %}
-                                        {{ error }}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
                                     {% endfor %}
                                 </div>
                             {% endif %}
                         </div>
-                        
-                        <button type="submit" class="btn btn-primary w-100">
+
+                        <!-- ============================================ -->
+                        <!-- CGU                                           -->
+                        <!-- ============================================ -->
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="cgu" required>
+                            <label class="form-check-label small" for="cgu">
+                                J'accepte les 
+                                <a href="#" class="text-decoration-none">Conditions Générales d'Utilisation</a>
+                                et la 
+                                <a href="#" class="text-decoration-none">Politique de confidentialité</a>
+                            </label>
+                        </div>
+
+                        <!-- ============================================ -->
+                        <!-- BOUTON D'INSCRIPTION                         -->
+                        <!-- ============================================ -->
+                        <button type="submit" class="btn btn-primary btn-lg w-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 50px;">
                             <i class="fas fa-user-plus me-2"></i>S'inscrire
                         </button>
                     </form>
                     
                     <hr class="my-4">
                     
+                    <!-- ============================================ -->
+                    <!-- LIENS DE CONNEXION                          -->
+                    <!-- ============================================ -->
                     <div class="text-center">
                         <p class="mb-0">
-                            Déjà un compte ? 
-                            <a href="{{ url_for('auth.connexion') }}" class="text-decoration-none">
+                            <span class="text-muted">Déjà un compte ?</span>
+                            <a href="{{ url_for('auth.connexion') }}" class="text-decoration-none fw-bold">
                                 Se connecter
                             </a>
                         </p>
                     </div>
+
+                    <!-- ============================================ -->
+                    <!-- SOCIAL LOGIN (optionnel)                    -->
+                    <!-- ============================================ -->
+                    <div class="text-center mt-3">
+                        <p class="text-muted small mb-2">ou inscrivez-vous avec</p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button class="btn btn-outline-secondary btn-sm" style="width: 40px; height: 40px; border-radius: 50%;">
+                                <i class="fab fa-google"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" style="width: 40px; height: 40px; border-radius: 50%;">
+                                <i class="fab fa-facebook-f"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" style="width: 40px; height: 40px; border-radius: 50%;">
+                                <i class="fab fa-apple"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- INFORMATIONS SUPPLÉMENTAIRES                  -->
+            <!-- ============================================ -->
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    <i class="fas fa-lock me-1"></i>
+                    Vos données sont sécurisées et ne seront pas partagées.
+                </small>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* --- Gradient --- */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* --- Form controls --- */
+.form-control-lg {
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.form-control-lg:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.input-group-text {
+    border-radius: 10px 0 0 10px;
+    border: 1px solid #e2e8f0;
+    border-right: none;
+}
+
+.input-group .form-control-lg {
+    border-radius: 0 10px 10px 0;
+}
+
+/* --- Password toggle --- */
+#togglePassword {
+    border-radius: 0 10px 10px 0;
+    border-left: none;
+}
+
+/* --- Progress bar --- */
+.progress {
+    border-radius: 10px;
+    background-color: #e9ecef;
+}
+
+/* --- Card --- */
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem !important;
+    }
+    .col-md-6.mt-3 {
+        margin-top: 0 !important;
+    }
+}
+</style>
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT                                   -->
+<!-- ============================================ -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ============================================ -->
+    // AFFICHER/MASQUER LE MOT DE PASSE
+    // ============================================ -->
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const passwordIcon = document.getElementById('passwordIcon');
+
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            passwordIcon.classList.toggle('fa-eye');
+            passwordIcon.classList.toggle('fa-eye-slash');
+        });
+    }
+
+    // ============================================ -->
+    // INDICATEUR DE FORCE DU MOT DE PASSE
+    // ============================================ -->
+    const passwordStrength = document.getElementById('passwordStrength');
+    const passwordHelp = document.getElementById('passwordHelp');
+
+    if (passwordInput && passwordStrength) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            let message = '';
+
+            if (password.length >= 6) strength += 25;
+            if (password.length >= 10) strength += 25;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
+            if (/\d/.test(password) && /[^a-zA-Z0-9]/.test(password)) strength += 25;
+
+            if (strength === 0) {
+                message = 'Très faible';
+                passwordStrength.className = 'progress-bar bg-danger';
+            } else if (strength <= 25) {
+                message = 'Faible';
+                passwordStrength.className = 'progress-bar bg-danger';
+            } else if (strength <= 50) {
+                message = 'Moyen';
+                passwordStrength.className = 'progress-bar bg-warning';
+            } else if (strength <= 75) {
+                message = 'Fort';
+                passwordStrength.className = 'progress-bar bg-info';
+            } else {
+                message = 'Très fort';
+                passwordStrength.className = 'progress-bar bg-success';
+            }
+
+            passwordStrength.style.width = strength + '%';
+            if (password.length > 0) {
+                passwordHelp.textContent = message + ` (${strength}%)`;
+            } else {
+                passwordHelp.textContent = 'Minimum 6 caractères';
+            }
+        });
+    }
+
+    // ============================================ -->
+    // VALIDATION DU FORMULAIRE
+    // ============================================ -->
+    const form = document.querySelector('form');
+    const cguCheckbox = document.getElementById('cgu');
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!cguCheckbox.checked) {
+                e.preventDefault();
+                alert('Veuillez accepter les Conditions Générales d\'Utilisation.');
+                cguCheckbox.focus();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

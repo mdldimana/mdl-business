@@ -14,6 +14,7 @@ class InscriptionForm(FlaskForm):
     prenom = StringField('Prénom', validators=[DataRequired(), Length(min=2, max=50)])
     nom = StringField('Nom', validators=[DataRequired(), Length(min=2, max=50)])
     email = EmailField('Email', validators=[DataRequired(), Email()])
+    telephone = StringField('Téléphone', validators=[Length(max=20)])
     mot_de_passe = PasswordField('Mot de passe', validators=[
         DataRequired(),
         Length(min=6, message='Le mot de passe doit contenir au moins 6 caractères.')

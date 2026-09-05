@@ -90,6 +90,7 @@ def inscription():
             email=form.email.data,
             prenom=form.prenom.data,
             nom=form.nom.data,
+            telephone=form.telephone.data,
             mot_de_passe_hash=mot_de_passe_hash,
             est_admin=False,
             est_actif=True
