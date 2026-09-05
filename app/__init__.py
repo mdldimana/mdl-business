@@ -5,6 +5,11 @@ from dotenv import load_dotenv
 from app.extensions import db, migrate, bcrypt, login_manager
 from app.models import Utilisateur, Categorie, Produit
 
+# Importer Cloudinary
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
 load_dotenv()
 
 
@@ -15,13 +20,11 @@ def create_app():
 
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-secret-key'
 
-    # ============================================ -->
-    # UTILISER DATABASE_URL (POSTGRESQL)
-    # ============================================ -->
+    # ============================================
+    # BASE DE DONNÉES (POSTGRESQL)
+    # ============================================
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
-    # psycopg v3 utilise automatiquement postgresql+psycopg
 
-    # Fallback pour le développement local
     if not app.config['SQLALCHEMY_DATABASE_URI']:
         app.config['SQLALCHEMY_DATABASE_URI'] = (
             f"mysql+pymysql://{os.environ.get('DB_USER')}:{os.environ.get('DB_PASS')}"
@@ -30,6 +33,15 @@ def create_app():
         )
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # ============================================
+    # CLOUDINARY - CONFIGURATION
+    # ============================================
+    cloudinary.config(
+        cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+        api_key=os.environ.get('CLOUDINARY_API_KEY'),
+        api_secret=os.environ.get('CLOUDINARY_API_SECRET')
+    )
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -42,7 +54,8 @@ def create_app():
 
     @app.route('/')
     def accueil():
-        produits_recents = Produit.query.filter_by(est_disponible=True).limit(4).all()
+        # Exclure les services
+        produits_recents = Produit.query.filter_by(est_disponible=True, est_service=False).limit(4).all()
         return render_template('accueil.html', produits=produits_recents)
 
     # Enregistrer les blueprints

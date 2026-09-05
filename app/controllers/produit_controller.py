@@ -1,19 +1,30 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, url_for
 from app.models import Produit, Categorie
+import math
 
 produit_bp = Blueprint('produit', __name__)
+
+# Nombre de produits par page
+PRODUITS_PAR_PAGE = 12
 
 
 @produit_bp.route('/produits')
 def liste_produits():
-    """Affiche la liste de tous les produits"""
-    # Afficher tous les produits disponibles (y compris les services)
-    produits = Produit.query.filter_by(est_disponible=True).all()
+    """Affiche la liste de tous les produits avec pagination"""
+    page = request.args.get('page', 1, type=int)
+
+    # Récupérer les produits avec pagination
+    pagination = Produit.query.filter_by(est_disponible=True) \
+        .order_by(Produit.id) \
+        .paginate(page=page, per_page=PRODUITS_PAR_PAGE, error_out=False)
+
+    produits = pagination.items
     categories = Categorie.query.filter_by(est_active=True).all()
 
     return render_template('produits/liste.html',
                            produits=produits,
-                           categories=categories)
+                           categories=categories,
+                           pagination=pagination)
 
 
 @produit_bp.route('/produit/<slug>')
@@ -25,15 +36,25 @@ def detail_produit(slug):
 
 @produit_bp.route('/categorie/<slug>')
 def produits_par_categorie(slug):
-    """Affiche les produits d'une catégorie"""
+    """Affiche les produits d'une catégorie avec pagination"""
+    page = request.args.get('page', 1, type=int)
+
     categorie = Categorie.query.filter_by(slug=slug, est_active=True).first_or_404()
-    produits = Produit.query.filter_by(categorie_id=categorie.id, est_disponible=True).all()
+
+    pagination = Produit.query.filter_by(
+        categorie_id=categorie.id,
+        est_disponible=True
+    ).order_by(Produit.id) \
+        .paginate(page=page, per_page=PRODUITS_PAR_PAGE, error_out=False)
+
+    produits = pagination.items
     categories = Categorie.query.filter_by(est_active=True).all()
 
     return render_template('produits/liste.html',
                            produits=produits,
                            categories=categories,
-                           categorie_active=categorie)
+                           categorie_active=categorie,
+                           pagination=pagination)
 
 
 @produit_bp.route('/services')
