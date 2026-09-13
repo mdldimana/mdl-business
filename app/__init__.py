@@ -21,17 +21,42 @@ def create_app():
                 static_folder='views/static')
 
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-secret-key'
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 
-    if not app.config['SQLALCHEMY_DATABASE_URI']:
-        app.config['SQLALCHEMY_DATABASE_URI'] = (
+    # --- Construction robuste de l'URI DB ---
+    database_url = os.environ.get('DATABASE_URL')
+
+    # Nettoyer les espaces/quotes parasites souvent collés depuis un dashboard
+    if database_url:
+        database_url = database_url.strip().strip('"').strip("'")
+
+    # SQLAlchemy moderne exige postgresql:// (pas postgres://)
+    if database_url and database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql+psycopg://', 1)
+
+    # Fallback MySQL si DATABASE_URL absente
+    if not database_url:
+        database_url = (
             f"mysql+pymysql://{os.environ.get('DB_USER')}:{os.environ.get('DB_PASS')}"
             f"@{os.environ.get('DB_HOST')}:{os.environ.get('DB_PORT')}"
             f"/{os.environ.get('DB_NAME')}"
         )
 
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 
+    # Log de diagnostic (visible dans les logs Render)
+    print("=== DB URI ===", flush=True)
+    if database_url:
+        # On masque le mot de passe dans les logs
+        try:
+            before_at = database_url.split('@')[0]
+            after_at = database_url.split('@', 1)[1]
+            masked = before_at.split('://')[0] + '://***:***@' + after_at
+            print("URI (masquée) :", masked, flush=True)
+        except Exception:
+            print("URI présente mais illisible", flush=True)
+    else:
+        print("AUCUNE URI DB TROUVÉE", flush=True)
+    print("==============", flush=True)
     # ============================================
     # CLOUDINARY - CONFIGURATION
     # ============================================
